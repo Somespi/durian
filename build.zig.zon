@@ -1,0 +1,11 @@
+.{
+    .name = "redefine",
+    .version = "0.0.0",
+    .dependencies = .{
+        .raylib = .{
+            .url = "https://codeload.github.com/raysan5/raylib/tar.gz/6094869e3e845e90e1e8ae41b98e889fb3e13e78",
+            .hash = "12203b7a16bcf8d7fe4c9990a46d92b6f2e35531a4b82eb3bdf8ba4a0dbcc5f21415"
+        },
+    },
+    .paths = .{""},
+}
