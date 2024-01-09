@@ -1,5 +1,6 @@
 #include <headers/window.hpp>
 
+
 Window::Window() {
     _window = nullptr;
     _renderer = nullptr;
@@ -14,10 +15,16 @@ void Window::run() {
     winloop();
 }
 
+
+
 void Window::init(const char* title, int x, int y, int w, int h, Uint32 flags) {
     SDL_Init(SDL_INIT_EVERYTHING);
     _window = SDL_CreateWindow(title, x, y, w, h, flags);
     _renderer = SDL_CreateRenderer(_window, -1, 0);
+
+    Label label;
+    SDL_Rect* text = label.draw(_renderer, nullptr, "Hello World", 20);
+
 }
 
 void Window::winloop() {
