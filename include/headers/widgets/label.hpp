@@ -2,6 +2,7 @@
 #include <sdl/SDL.h>
 #include <sdl/SDL_ttf.h>
 #include <string>
+#undef main 
 
 
 class Label {
@@ -9,8 +10,14 @@ class Label {
         Label();
         ~Label();
 
-        SDL_Rect* draw(SDL_Renderer* renderer, SDL_Rect* rect, std::string text, int psize, int height = 80, int width = 60, SDL_Color color = { 255, 255, 255, 0 });
-    
+        SDL_Rect* draw(
+            SDL_Renderer* renderer, 
+            std::string text,
+            int psize, 
+            int height = 80, 
+            int width = 60, 
+            SDL_Color color = { 255, 255, 255, 0 }
+            );
     private:
 
         void Init_Font();

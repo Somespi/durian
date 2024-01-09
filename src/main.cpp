@@ -1,7 +1,6 @@
 #include <headers/window.hpp>
 
-
-int main(int argc, char** argv) {
+int main(int argv, char** args) {
 
     Window window;
     window.run();

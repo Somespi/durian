@@ -22,8 +22,8 @@ void Window::init(const char* title, int x, int y, int w, int h, Uint32 flags) {
     _window = SDL_CreateWindow(title, x, y, w, h, flags);
     _renderer = SDL_CreateRenderer(_window, -1, 0);
 
-    Label label;
-    SDL_Rect* text = label.draw(_renderer, nullptr, "Hello World", 20);
+    //Label label;
+    //SDL_Rect* text = label.draw(_renderer, "Hello World", 20);
 
 }
 

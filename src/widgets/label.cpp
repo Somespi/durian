@@ -4,12 +4,11 @@
 
 SDL_Rect* Label::draw(
     SDL_Renderer* renderer, 
-    SDL_Rect* rect, 
     std::string text,
     int psize, 
-    int height = 80, 
-    int width = 60, 
-    SDL_Color color = { 255, 255, 255, 0 }
+    int height, 
+    int width, 
+    SDL_Color color
     ) {
 
 
@@ -20,10 +19,16 @@ SDL_Rect* Label::draw(
     Init_Font();
     SDL_Surface* surface = TTF_RenderText_Solid(_font, _text.c_str(), _color);
     SDL_Texture* texture =  SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_Rect rect = { 0, 0, text.size() * width, height};
+    SDL_Rect* rect = new SDL_Rect;  
+    rect->x = 0;
+    rect->y = 0;
+    rect->w = width * text.size();
+    rect->h = height;
 
     SDL_RenderCopy(renderer, texture, NULL, rect);
-    free(surface);
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+
     return rect;
 
 }
