@@ -3,7 +3,7 @@ const rl = @cImport({
     @cInclude("raymath.h");
 });
 
-const landon = @import("windows/landon.zig");
+const init_landon = @import("windows/landon.zig").init_landon;
 
 pub fn main() anyerror!void {
     const screenWidth = 800;
@@ -21,6 +21,6 @@ pub fn main() anyerror!void {
         rl.BeginDrawing();
         defer rl.EndDrawing();
 
-        landon.init_landon();
+        try init_landon();
     }
 }
