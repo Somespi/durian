@@ -26,7 +26,7 @@ export const Layout = struct {
         };
     }
 
-    pub fn concluse(self: Layout) void {
+    pub fn conclude(self: Layout) void {
         self.layout_items.deinit();
         for (self.layout_items.items) |widget| self.layout_items.allocator.free(widget);
     }

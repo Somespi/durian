@@ -3,9 +3,15 @@ const rl = @cImport({
     @cInclude("raymath.h");
 });
 
-const rpu = @import("../utils/rpu.zig").rpu;
+const Layout = @import("../utils/layout.zig").Layout;
 
 
 pub export fn init_landon() void {
-    rl.DrawText("Select Project", 20, rpu(35, 0), 50, rl.RAYWHITE);
+    const layout = Layout.introduce(
+        rl.GetScreenHeight(), 
+        rl.GetScreenWidth(), 
+        rl.GetColor(0x00000000));
+
+    defer layout.conclude();
+
 }
