@@ -4,5 +4,5 @@ const rl = @cImport({
 });
 
 pub export fn init_landon() void {
-
+    rl.DrawText("Select Project", 100, 50, 40, rl.RAYWHITE);
 }
