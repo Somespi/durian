@@ -22,5 +22,5 @@ pub fn init_landon() anyerror!void {
         rl.Rectangle {.x = 0, .y = 0, .height = @floatFromInt(rl.GetScreenHeight()), .width = 300.0}, 
         rl.GetColor(0x1A1A1A));
 
-    try layout.drawBordersFor(0, rl.BLACK, 6);
+    try layout.drawBordersFor(0, rl.BLACK, 3);
 }
