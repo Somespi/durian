@@ -3,6 +3,7 @@ const rl = @cImport({
     @cInclude("raymath.h");
 });
 
+const landon = @import("windows/landon.zig");
 
 
 pub fn main() anyerror!void {
@@ -13,15 +14,17 @@ pub fn main() anyerror!void {
     rl.InitWindow(screenWidth, screenHeight, "redefine");
     defer rl.CloseWindow(); 
 
+
     rl.SetTargetFPS(60);
     
     rl.MaximizeWindow();
     while (!rl.WindowShouldClose()) { 
         
+        rl.ClearBackground(rl.GetColor(0x232223));
         rl.BeginDrawing();
         defer rl.EndDrawing();
 
-    
+        landon.init_landon();
 
     }
 }

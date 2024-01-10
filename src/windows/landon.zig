@@ -3,6 +3,6 @@ const rl = @cImport({
     @cInclude("raymath.h");
 });
 
-export fn init_landon() anyerror!void {
-    
+pub export fn init_landon() void {
+
 }
