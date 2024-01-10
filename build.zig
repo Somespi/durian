@@ -6,7 +6,7 @@ pub fn build(b: *std.Build) void {
     const raylib = b.dependency("raylib", .{ .target = target, .optimize = optimize });
 
     const exe = b.addExecutable(.{
-        .name = "redefine",
+        .name = "durian",
         .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = optimize,
