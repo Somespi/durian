@@ -15,12 +15,13 @@ pub fn main() anyerror!void {
 
     rl.SetTargetFPS(60);
     
-
+    rl.MaximizeWindow();
     while (!rl.WindowShouldClose()) { 
         
         rl.BeginDrawing();
         defer rl.EndDrawing();
 
-        
+    
+
     }
 }
