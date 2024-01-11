@@ -6,7 +6,7 @@ const rl = @cImport({
 const Grid   = @import("../utils/grid.zig").Grid;
 const Layout = @import("../utils/layout.zig").Layout;
 
-pub fn init_landon() anyerror!void {
+pub fn initLanding() anyerror!void {
     var layout = Layout.introduce(rl.GetScreenHeight(), rl.GetScreenWidth(), 0, 0, rl.GetColor(0xff343400));
     defer layout.conclude();
 

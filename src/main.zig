@@ -3,7 +3,7 @@ const rl = @cImport({
     @cInclude("raymath.h");
 });
 
-const init_landon = @import("windows/landon.zig").init_landon;
+const initLanding = @import("windows/landon.zig").initLanding;
 
 pub fn main() anyerror!void {
     
@@ -17,6 +17,6 @@ pub fn main() anyerror!void {
         rl.BeginDrawing();
         defer rl.EndDrawing();
 
-        try init_landon();
+        try initLanding();
     }
 }
