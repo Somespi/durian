@@ -24,6 +24,7 @@ pub const Layout = struct {
     pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, background_color: rl.Color) Layout {
         var gpa = std.heap.GeneralPurposeAllocator(.{}){};
         var arena = std.heap.ArenaAllocator.init(gpa.allocator());
+        defer arena.deinit();
 
         return Layout{ 
         .width = width, 
@@ -31,7 +32,7 @@ pub const Layout = struct {
         .x = x, 
         .y = y, 
         .background = background_color, 
-        .layout_items = Arraylist(LayoutItem).init(arena.allocator()), 
+        .layout_items = Arraylist(LayoutItem).init(gpa.backing_allocator), 
         .grid = undefined };
     }
 
@@ -69,7 +70,6 @@ pub const Layout = struct {
             @intFromFloat(copied.width), 
             @intFromFloat(copied.height), 
             color);
-        
         try self.layout_items.append(LayoutItem{ .widget = copied, .color = color });
     }
 
@@ -100,16 +100,12 @@ pub const Layout = struct {
         self.height = newHeight;
     }
 
-    pub fn setGridSystem(self: *Layout,  cellSideLength: f64) void {
+    pub fn setGridSystem(self: *Layout, cells: c_int) void {
         self.grid = Grid.introduce(
-            20, 
-            cellSideLength,
+            cells, 
             @floatFromInt(self.height),
             @floatFromInt(self.width));
     }
-
-    
-
 
 
 };

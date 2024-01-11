@@ -13,35 +13,40 @@ const xyhw = struct {
 
 pub const Grid = struct {
     cells: c_int,
-    approximateCells: c_int,
     columns: c_int,
     rows: c_int,
-    cellSideLength: f64,
+    cell_width: f64,
+    cell_height: f64,
     width: f64,
     height: f64,
 
-    pub fn introduce(approximateCells: c_int, cellSideLength: f64, height: f64, width: f64) Grid {
-        const cells = @as(c_int, @intFromFloat(getCellsNumber(cellSideLength, height, width)));
-        const cols = @as(c_int, @intFromFloat(width / cellSideLength));
-        return Grid{ 
+    pub fn introduce(cells: c_int, height: f64, width: f64) Grid {
+        const f_cells = @as(f64,@floatFromInt(cells));
+
+        var cellWidth = width / @sqrt(f_cells);
+        var cellHeight = height / @sqrt(f_cells);
+
+        const remainingWidth = (width - f_cells * cellWidth) / 2;
+        const remainingHeight = (height - f_cells * cellHeight) / 2;
+
+        cellWidth  += remainingWidth  / f_cells;
+        cellHeight += remainingHeight / f_cells;
+        
+        const totalRows = @floor(height / cellHeight);
+        const totalColumns = @floor(width / cellWidth);
+
+
+        return Grid { 
             .cells = cells, 
-            .approximateCells = approximateCells, .
-            cellSideLength = cellSideLength, 
+            .cell_height = cellHeight,
+            .cell_width = cellWidth,
             .width = width, 
             .height = height,
-            .columns =  @as(c_int, @intFromFloat(width / cellSideLength)),
-            .rows = @divFloor(cells, cols)
+            .columns = @intFromFloat(totalColumns),
+            .rows = @intFromFloat(totalRows)
             };
     }
 
-    fn getCellsNumber(cellSideLength: f64, height: f64, width: f64) f64 {
-        return (height * width) / (cellSideLength * cellSideLength);
-    }
-
-    pub fn cellsUsize(self: Grid) usize {
-        const cells_to_usize: usize = @intCast(self.cells);
-        return cells_to_usize;
-    }
 
     pub fn reserveSpace(self: Grid, column: usize, row: usize, spanColumn: usize, spanRow: usize) anyerror![]Point {
 
@@ -60,7 +65,7 @@ pub const Grid = struct {
         
         for (column..columns_u) |col| {
             for (row..rows_u) |rw| {
-                try points.append(Point { col, rw });
+                try points.append(Point { col , rw });
             }
         }
 
@@ -68,19 +73,17 @@ pub const Grid = struct {
     }
 
     pub fn getPositionedGrid(self: Grid, points: []Point) anyerror!xyhw {
-        var max_col: f64 = 1.0;
-        var max_row: f64 = 1.0;
 
-        for (points) |point| {
-            max_col = @floatFromInt(point[0]);
-            max_row = @floatFromInt(point[1]);
-        }
+        const max_col = @as(f64,@floatFromInt(points[points.len-1][0]));
+        const max_row = @as(f64,@floatFromInt(points[points.len-1][1]));
+        const min_col = @as(f64,@floatFromInt(points[0][0]));
+        const min_row = @as(f64,@floatFromInt(points[0][1]));
 
         return xyhw {
-            .x = @as(c_int, @intCast(points[0][0])) + 1,
-            .y = @as(c_int, @intCast(points[0][1])) + 1,
-            .height = (max_row + 1.0) * self.cellSideLength,
-            .width = (max_col + 1.0) * self.cellSideLength,
+            .x =  @intFromFloat(min_col * self.cell_width),
+            .y =  @intFromFloat(min_row * self.cell_height),
+            .height = (max_col + 1.0) * self.cell_height,
+            .width =  (max_row + 1.0) * self.cell_width,
         };
     }
 };

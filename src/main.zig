@@ -3,7 +3,7 @@ const rl = @cImport({
     @cInclude("raymath.h");
 });
 
-const initLanding = @import("windows/landon.zig").initLanding;
+const initLanding = @import("windows/landing.zig").initLanding;
 
 pub fn main() anyerror!void {
     
