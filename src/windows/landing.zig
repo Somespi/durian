@@ -13,7 +13,7 @@ pub fn initLanding() anyerror!void {
 
     layout.setGridSystem(10);
     layout.drawRect();
-    //layout.handleResize(rl.GetScreenWidth(), rl.GetScreenHeight());
+    layout.handleResize(rl.GetScreenWidth(), rl.GetScreenHeight());
 
     var i: u32 = 0;
     const col_u: usize = @intCast(layout.grid.columns);
@@ -28,7 +28,7 @@ pub fn initLanding() anyerror!void {
                 layout.rectangle(),
                 rl.GetColor(0x1A1A1A),
                 try layout.grid.reserveSpace(col, row, 0, 0));
-            print("col = {},row = {}\n",.{col, row});
+
             try layout.drawBordersFor(i, rl.BLACK, 3);
             i += 1;
         }
