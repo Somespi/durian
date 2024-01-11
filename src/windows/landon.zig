@@ -14,11 +14,15 @@ pub fn init_landon() anyerror!void {
     layout.drawRect();
     layout.handleResize(rl.GetScreenWidth(), rl.GetScreenHeight());
 
-    try layout.append(rl.Rectangle{ .x = 0, .y = 0, .height = @floatFromInt(rl.GetScreenHeight()), .width = 300.0 }, rl.GetColor(0x1A1A1A));
-    try layout.drawBordersFor(0, rl.BLACK, 3);
+    const rows_usize: usize = @intCast(layout.grid.rows);
+    try layout.pack(
+        layout.rectangle(),
+        rl.GetColor(0x1A1A1A),
+        try layout.grid.reserveSpace(0, 0, rows_usize, 4 )
+        );
 
-    @import("std").debug.print("{any}\n", .{
-        layout.grid.reserveSpace(0, 0, 2, 3)
-        });
+    
+    //try layout.drawBordersFor(0, rl.BLACK, 3);
+
 
 }

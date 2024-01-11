@@ -2,9 +2,10 @@ const rl = @cImport({
     @cInclude("raylib.h");
     @cInclude("raymath.h");
 });
-const Arraylist = @import("std").ArrayList;
+const std =  @import("std");
+const Arraylist = std.ArrayList;
 const Grid = @import("grid.zig").Grid; 
-
+const Point = @import("grid.zig").Point; 
 
 const LayoutItem = struct {
     widget: rl.Rectangle,
@@ -21,21 +22,55 @@ pub const Layout = struct {
     grid: Grid,
 
     pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, background_color: rl.Color) Layout {
-        return Layout{ .width = width, .height = height, .x = x, .y = y, .background = background_color, .layout_items = Arraylist(LayoutItem).init(@import("std").heap.page_allocator), .grid = undefined };
+        var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+        var arena = std.heap.ArenaAllocator.init(gpa.allocator());
+
+        return Layout{ 
+        .width = width, 
+        .height = height, 
+        .x = x, 
+        .y = y, 
+        .background = background_color, 
+        .layout_items = Arraylist(LayoutItem).init(arena.allocator()), 
+        .grid = undefined };
     }
 
     pub fn conclude(self: Layout) void {
         self.layout_items.deinit();
-        // for (self.layout_items.items) |widget| self.layout_items.allocator.free(widget);
     }
 
     pub fn drawRect(self: Layout) void {
         rl.DrawRectangle((self.x), (self.y), (self.width), (self.height), self.background);
     }
 
-    pub fn append(self: *Layout, widget: rl.Rectangle, color: rl.Color) anyerror!void {
-        rl.DrawRectangle(@intFromFloat(widget.x), @intFromFloat(widget.y), @intFromFloat(widget.width), @intFromFloat(widget.height), color);
-        try self.layout_items.append(LayoutItem{ .widget = widget, .color = color });
+    pub fn rectangle(self: Layout) rl.Rectangle {
+        _ = self;
+        return rl.Rectangle{ 
+            .x = 0.0, 
+            .y = 0.0, 
+            .height = 0.0, 
+            .width = 0.0
+        };
+    }
+
+    pub fn pack(self: *Layout, widget: rl.Rectangle, color: rl.Color, points:  []Point) anyerror!void {
+        _ = widget;
+        const positioned_grid = try self.grid.getPositionedGrid(points);
+        const copied = rl.Rectangle {
+        .x = @floatFromInt(positioned_grid.x),
+        .y = @floatFromInt(positioned_grid.y),
+        .height = @floatCast(positioned_grid.height),
+        .width = @floatCast(positioned_grid.width),
+        };
+
+        rl.DrawRectangle(
+            positioned_grid.x, 
+            positioned_grid.y, 
+            @intFromFloat(copied.width), 
+            @intFromFloat(copied.height), 
+            color);
+        
+        try self.layout_items.append(LayoutItem{ .widget = copied, .color = color });
     }
 
     pub fn drawBordersFor(self: Layout, index: u32, color: rl.Color, thickness: usize) anyerror!void {
@@ -72,6 +107,8 @@ pub const Layout = struct {
             @floatFromInt(self.height),
             @floatFromInt(self.width));
     }
+
+    
 
 
 
