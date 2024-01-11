@@ -26,15 +26,16 @@ pub const Grid = struct {
         var cellWidth = width / @sqrt(f_cells);
         var cellHeight = height / @sqrt(f_cells);
 
-        const remainingWidth = (width - f_cells * cellWidth) / 2;
-        const remainingHeight = (height - f_cells * cellHeight) / 2;
+        const remainingWidth = (width - f_cells * cellWidth);
+        const remainingHeight = (height - f_cells * cellHeight);
 
-        cellWidth  += remainingWidth  / f_cells;
-        cellHeight += remainingHeight / f_cells;
+        cellWidth  += remainingWidth  / f_cells ;
+        cellHeight += remainingHeight / f_cells ;
         
-        const totalRows = @floor(height / cellHeight);
-        const totalColumns = @floor(width / cellWidth);
+        const totalRows = @round(height / cellHeight);
+        const totalColumns = @round(width / cellWidth);
 
+        
 
         return Grid { 
             .cells = cells, 

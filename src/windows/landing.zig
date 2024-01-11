@@ -28,10 +28,14 @@ pub fn initLanding() anyerror!void {
                 layout.rectangle(),
                 rl.GetColor(0x1A1A1A),
                 try layout.grid.reserveSpace(col, row, 0, 0));
-            
+            print("col = {},row = {}\n",.{col, row});
             try layout.drawBordersFor(i, rl.BLACK, 3);
             i += 1;
         }
     }
+
+
+
+    try layout.drawBordersFor(0, rl.BLACK, 3);
 
 }
