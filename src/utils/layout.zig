@@ -3,6 +3,8 @@ const rl = @cImport({
     @cInclude("raymath.h");
 });
 const Arraylist = @import("std").ArrayList;
+const Grid = @import("grid.zig").Grid; 
+
 
 const LayoutItem = struct {
     widget: rl.Rectangle,
@@ -16,9 +18,10 @@ pub const Layout = struct {
     y: c_int,
     background: rl.Color,
     layout_items: Arraylist(LayoutItem),
+    grid: Grid,
 
     pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, background_color: rl.Color) Layout {
-        return Layout{ .width = width, .height = height, .x = x, .y = y, .background = background_color, .layout_items = Arraylist(LayoutItem).init(@import("std").heap.page_allocator) };
+        return Layout{ .width = width, .height = height, .x = x, .y = y, .background = background_color, .layout_items = Arraylist(LayoutItem).init(@import("std").heap.page_allocator), .grid = undefined };
     }
 
     pub fn conclude(self: Layout) void {
@@ -39,7 +42,11 @@ pub const Layout = struct {
         const widget = self.layout_items.items[index].widget;
         for (0..(thickness)) |thick| {
             const current_thickness: c_int = @intCast(thick);
-            rl.DrawRectangleLines(@intFromFloat(widget.x),@intFromFloat(widget.y), @as(c_int, @intFromFloat(widget.width)) + current_thickness, @as(c_int, @intFromFloat(widget.height)) + current_thickness, color);
+            rl.DrawRectangleLines(@intFromFloat(widget.x), 
+                @intFromFloat(widget.y), 
+                @as(c_int, @intFromFloat(widget.width)) + current_thickness, 
+                @as(c_int, @intFromFloat(widget.height)) + current_thickness,
+                color);
         }
     }
 
@@ -57,4 +64,15 @@ pub const Layout = struct {
         self.width = newWidth;
         self.height = newHeight;
     }
+
+    pub fn setGridSystem(self: *Layout,  cellSideLength: f64) void {
+        self.grid = Grid.introduce(
+            20, 
+            cellSideLength,
+            @floatFromInt(self.height),
+            @floatFromInt(self.width));
+    }
+
+
+
 };
