@@ -49,7 +49,7 @@ pub const Grid = struct {
     }
 
 
-    pub fn reserveSpace(self: Grid, column: usize, row: usize, spanColumn: usize, spanRow: usize) anyerror![]Point {
+    pub fn reserveSpace(self: Grid, column: usize, row: usize, spanRow: usize, spanColumn: usize) anyerror![]Point {
 
         var gpa = std.heap.GeneralPurposeAllocator(.{}){};
         var arena = std.heap.ArenaAllocator.init(gpa.allocator());
@@ -58,14 +58,14 @@ pub const Grid = struct {
         defer points.deinit();
 
 
-        if (!((self.rows >= row) or (self.rows >= spanRow) or
-            (self.columns >= column) or (self.columns >= spanColumn))) unreachable;
+        if (!((self.rows >= row) or (self.rows >= spanColumn) or
+            (self.columns >= column) or (self.columns >= spanRow))) unreachable;
 
-        const columnsU: usize = @intCast(self.columns);
-        const rowsU: usize = @intCast(self.rows);
+        const columnsU: usize = @intCast(spanRow);
+        const rowsU: usize = @intCast(spanColumn);
         
-        for (column..columnsU) |col| {
-            for (row..rowsU) |rw| {
+        for (column..(columnsU + 1)) |col| {
+            for (row..(rowsU + 1)) |rw| {
                 try points.append(Point { col , rw });
             }
         }
