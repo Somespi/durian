@@ -20,13 +20,13 @@ pub fn initLanding() anyerror!void {
     layout.setGridSystem(50);
     layout.drawRect();
 
-    const row_u: usize = @intCast(layout.grid.rows);
-
 
     try layout.pack(
         layout.rectangle(),
         rl.BLACK,
-        try layout.grid.reserveSpace(0, 0, row_u, 5)
+        try layout.grid.reserveSpace(0, 0, 
+        layout.grid.Extend.full
+        , 5)
     );
 
 }
