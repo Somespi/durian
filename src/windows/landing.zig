@@ -27,13 +27,11 @@ pub fn initLanding() anyerror!void {
 
 
     sidebar.setGridSystem(20);
-    defer sidebar.conclude();
 
     var i: u32 = 0;
     const col_u: usize = @intCast(sidebar.grid.columns);
     const row_u: usize = @intCast(sidebar.grid.rows);
 
-    print("{}, {}\n", .{sidebar.grid.columns, sidebar.grid.rows});
     for (0..row_u) |row| {
         for (0..col_u) |col| {
 

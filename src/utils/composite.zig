@@ -51,9 +51,9 @@ pub const Composite = struct {
 
 
     pub fn conclude(self: Composite) void {
-        // for (0..self.layouts.items.len) |i| {
-        //     self.layouts.items[i].conclude();
-        // }
+        for (0..self.layouts.items.len) |i| {
+            self.layouts.items[i].conclude();
+        }
         self.layouts.deinit();
     }
 
