@@ -5,27 +5,32 @@ const rl = @cImport({
 
 const Grid = @import("../utils/grid.zig").Grid;
 const Layout = @import("../utils/layout.zig").Layout;
+const Composite = @import("../utils/composite.zig").Composite;
 const print = @import("std").debug.print;
 
 
 pub fn initLanding() anyerror!void {
-    
-    var layout = Layout.introduce(
-        rl.GetScreenHeight(),
-        rl.GetScreenWidth(), 
-        0, 0, 
-        rl.GetColor(0xff343400));
-    defer layout.conclude();
 
+    const screenHeight = rl.GetScreenHeight();
+    const screenWidth  = rl.GetScreenWidth();
+
+    var composite = Composite.introduce(screenHeight, screenHeight, 0, 0);
+    defer composite.conclude();
+
+    var layout = try composite.contain(Layout.introduce(
+        screenHeight,
+        screenWidth, 
+        0, 0, 
+        rl.GetColor(0xff343400)));
+    
     layout.setGridSystem(50);
-    layout.drawRect();
 
 
     try layout.pack(
         layout.rectangle(),
         rl.BLACK,
         try layout.grid.reserveSpace(0, 0, 
-        layout.grid.Extend.full
+        50
         , 5)
     );
 
