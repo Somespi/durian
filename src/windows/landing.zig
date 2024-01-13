@@ -23,11 +23,29 @@ pub fn initLanding() anyerror!void {
         composite.griddedHeight(50),
         composite.griddedWidth(10), 
         0, 0, 
-        rl.BLACK));
-    
+        rl.LIGHTGRAY));
+
+
     sidebar.setGridSystem(20);
+    defer sidebar.conclude();
+
+    var i: u32 = 0;
+    const col_u: usize = @intCast(sidebar.grid.columns);
+    const row_u: usize = @intCast(sidebar.grid.rows);
+
+    print("{}, {}\n", .{sidebar.grid.columns, sidebar.grid.rows});
+    for (0..row_u) |row| {
+        for (0..col_u) |col| {
 
 
-    
+            try sidebar.pack(
+                sidebar.rectangle(),
+                rl.GetColor(0x1A1A1A),
+                try sidebar.grid.reserveSpace(col, row, 0, 0));
+            print("col = {},row = {}\n",.{col, row});
+            try sidebar.drawBordersFor(i, rl.BLACK, 3);
+            i += 1;
+        }
+    }
 
 }

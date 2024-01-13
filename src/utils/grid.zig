@@ -4,12 +4,7 @@ const Arraylist = std.ArrayList;
 const Tuple = std.meta.Tuple;
 
 pub const Point = Tuple(&.{ usize, usize });
-const xyhw = struct {
-    x: c_int,
-    y: c_int,
-    height: f64,
-    width: f64
-};
+const xyhw = struct { x: c_int, y: c_int, height: f64, width: f64 };
 
 pub const Grid = struct {
     cells: c_int,
@@ -21,52 +16,39 @@ pub const Grid = struct {
     height: f64,
 
     pub fn introduce(cells: c_int, height: f64, width: f64) Grid {
-        const fCells = @as(f64,@floatFromInt(cells));
+        const f_cells = @as(f64, @floatFromInt(cells));
 
-        var cellWidth = width / @sqrt(fCells);
-        var cellHeight = height / @sqrt(fCells);
+        var cellWidth = width / @sqrt(f_cells);
+        var cellHeight = height / @sqrt(f_cells);
 
-        const remainingWidth = (width - fCells * cellWidth);
-        const remainingHeight = (height - fCells * cellHeight);
+        const remainingWidth = (width - f_cells * cellWidth);
+        const remainingHeight = (height - f_cells * cellHeight);
 
-        cellWidth  += remainingWidth  / fCells ;
-        cellHeight += remainingHeight / fCells ;
-        
+        cellWidth += remainingWidth / f_cells;
+        cellHeight += remainingHeight / f_cells;
+
         const totalRows = @round(height / cellHeight);
         const totalColumns = @round(width / cellWidth);
 
-        
-
-        return Grid { 
-            .cells = cells, 
-            .cellHeight = cellHeight,
-            .cellWidth = cellWidth,
-            .width = width, 
-            .height = height,
-            .columns = @intFromFloat(totalColumns),
-            .rows = @intFromFloat(totalRows)
-            };
+        return Grid{ .cells = cells, .cellHeight = cellHeight, .cellWidth = cellWidth, .width = width, .height = height, .columns = @intFromFloat(totalColumns), .rows = @intFromFloat(totalRows) };
     }
 
-
-    pub fn reserveSpace(self: Grid, column: usize, row: usize, spanRow: usize, spanColumn: usize) anyerror![]Point {
-
+    pub fn reserveSpace(self: Grid, column: usize, row: usize, spanColumn: usize, spanRow: usize) anyerror![]Point {
         var gpa = std.heap.GeneralPurposeAllocator(.{}){};
         var arena = std.heap.ArenaAllocator.init(gpa.allocator());
 
         var points = Arraylist(Point).init(arena.allocator());
         defer points.deinit();
 
+        if (!((self.rows >= row) or (self.rows >= spanRow) or
+            (self.columns >= column) or (self.columns >= spanColumn))) unreachable;
 
-        if (!((self.rows >= row) or (self.rows >= spanColumn) or
-            (self.columns >= column) or (self.columns >= spanRow))) unreachable;
+        const columns_u: usize = @intCast(self.columns);
+        const rows_u: usize = @intCast(self.rows);
 
-        const columnsU: usize = @intCast(spanRow);
-        const rowsU: usize = @intCast(spanColumn);
-        
-        for (column..(columnsU + 1)) |col| {
-            for (row..(rowsU + 1)) |rw| {
-                try points.append(Point { col , rw });
+        for (column..columns_u) |col| {
+            for (row..rows_u) |rw| {
+                try points.append(Point{ col, rw });
             }
         }
 
@@ -74,17 +56,16 @@ pub const Grid = struct {
     }
 
     pub fn getPositionedGrid(self: Grid, points: []Point) anyerror!xyhw {
+        const max_col = @as(f64, @floatFromInt(points[points.len - 1][0]));
+        const max_row = @as(f64, @floatFromInt(points[points.len - 1][1]));
+        const min_col = @as(f64, @floatFromInt(points[0][0]));
+        const min_row = @as(f64, @floatFromInt(points[0][1]));
 
-        const maxCol = @as(f64,@floatFromInt(points[points.len-1][0]));
-        const maxRow = @as(f64,@floatFromInt(points[points.len-1][1]));
-        const minCol = @as(f64,@floatFromInt(points[0][0]));
-        const minRow = @as(f64,@floatFromInt(points[0][1]));
-
-        return xyhw {
-            .x =  @intFromFloat(minCol * self.cellWidth),
-            .y =  @intFromFloat(minRow * self.cellHeight),
-            .height = (maxCol + 1.0) * self.cellHeight,
-            .width =  (maxRow + 1.0) * self.cellWidth,
+        return xyhw{
+            .x = @intFromFloat(min_col * self.cellWidth),
+            .y = @intFromFloat(min_row * self.cellHeight),
+            .height = (max_col + 1.0) * self.cellHeight,
+            .width = (max_row + 1.0) * self.cellWidth,
         };
     }
 };

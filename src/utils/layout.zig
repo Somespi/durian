@@ -56,7 +56,7 @@ pub const Layout = struct {
         try self.layoutItems.append(LayoutItem{ .widget = copied, .color = color });
     }
 
-    pub fn drawBordersFor(self: Layout, index: u32, color: rl.Color, thickness: usize) anyerror!void {
+    pub fn drawBordersFor(self: Layout, index: usize, color: rl.Color, thickness: usize) anyerror!void {
         const widget = self.layoutItems.items[index].widget;
         for (0..(thickness)) |thick| {
             const current_thickness: c_int = @intCast(thick);

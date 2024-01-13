@@ -46,14 +46,14 @@ pub const Composite = struct {
 
     pub fn griddedHeight(self: Composite, cells: c_int) c_int {
         if (self.grid.rows < cells) unreachable;
-        return (cells * @as(c_int, @intFromFloat(self.grid.cellWidth)));
+        return (cells * @as(c_int, @intFromFloat(self.grid.cellHeight)));
     }
 
 
     pub fn conclude(self: Composite) void {
-        for (0..self.layouts.items.len) |i| {
-            self.layouts.items[i].layoutItems.deinit();
-        }
+        // for (0..self.layouts.items.len) |i| {
+        //     self.layouts.items[i].conclude();
+        // }
         self.layouts.deinit();
     }
 
