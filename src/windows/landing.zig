@@ -14,24 +14,20 @@ pub fn initLanding() anyerror!void {
     const screenHeight = rl.GetScreenHeight();
     const screenWidth  = rl.GetScreenWidth();
 
-    var composite = Composite.introduce(screenHeight, screenHeight, 0, 0);
+    var composite = Composite.introduce(screenHeight, screenWidth, 0, 0);
     defer composite.conclude();
+    composite.setGridSystem(50);
 
-    var layout = try composite.contain(Layout.introduce(
-        screenHeight,
-        screenWidth, 
+
+    var sidebar = try composite.contain(Layout.introduce(
+        composite.griddedHeight(50),
+        composite.griddedWidth(10), 
         0, 0, 
-        rl.GetColor(0xff343400)));
+        rl.BLACK));
     
-    layout.setGridSystem(50);
+    sidebar.setGridSystem(20);
 
 
-    try layout.pack(
-        layout.rectangle(),
-        rl.BLACK,
-        try layout.grid.reserveSpace(0, 0, 
-        50
-        , 5)
-    );
+    
 
 }

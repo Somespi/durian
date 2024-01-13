@@ -35,6 +35,20 @@ pub const Composite = struct {
         return layout;
     }
 
+    pub fn setGridSystem(self: *Composite, cells: c_int) void {
+        self.grid = Grid.introduce(cells, @floatFromInt(self.height), @floatFromInt(self.width));
+    }
+
+    pub fn griddedWidth(self: Composite, cells: c_int) c_int {
+        if (self.grid.columns < cells) unreachable;
+        return (cells * @as(c_int, @intFromFloat(self.grid.cellWidth)));
+    }
+
+    pub fn griddedHeight(self: Composite, cells: c_int) c_int {
+        if (self.grid.rows < cells) unreachable;
+        return (cells * @as(c_int, @intFromFloat(self.grid.cellWidth)));
+    }
+
 
     pub fn conclude(self: Composite) void {
         for (0..self.layouts.items.len) |i| {

@@ -9,6 +9,7 @@ pub fn main() anyerror!void {
     
     rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE);
     rl.InitWindow(800, 400, "durian");
+    rl.SetWindowMinSize(800, 400);
     defer rl.CloseWindow();
 
     rl.SetTargetFPS(60);
