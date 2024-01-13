@@ -4,7 +4,7 @@ const Arraylist = std.ArrayList;
 const Tuple = std.meta.Tuple;
 
 pub const Point = Tuple(&.{ usize, usize });
-const xyhw = struct { x: c_int, y: c_int, height: f64, width: f64 };
+const xyhw = struct { x: f32, y: f32, height: f64, width: f64 };
 
 pub const Grid = struct {
     cells: c_int,
@@ -21,7 +21,7 @@ pub const Grid = struct {
         var cellWidth = width / @sqrt(f_cells);
         var cellHeight = height / @sqrt(f_cells);
 
-        const remainingWidth = (width - f_cells * cellWidth);
+        const remainingWidth =  (width - f_cells * cellWidth);
         const remainingHeight = (height - f_cells * cellHeight);
 
         cellWidth += remainingWidth / f_cells;
@@ -29,7 +29,6 @@ pub const Grid = struct {
 
         const totalRows = @round(height / cellHeight);
         const totalColumns = @round(width / cellWidth);
-
         return Grid{ .cells = cells, .cellHeight = cellHeight, .cellWidth = cellWidth, .width = width, .height = height, .columns = @intFromFloat(totalColumns), .rows = @intFromFloat(totalRows) };
     }
 
@@ -61,9 +60,9 @@ pub const Grid = struct {
         const min_col = @as(f64, @floatFromInt(points[0][0]));
         const min_row = @as(f64, @floatFromInt(points[0][1]));
 
-        return xyhw{
-            .x = @intFromFloat(min_col * self.cellWidth),
-            .y = @intFromFloat(min_row * self.cellHeight),
+        return xyhw {
+            .x = @floatCast(min_col * self.cellWidth),
+            .y = @floatCast(min_row * self.cellHeight),
             .height = (max_col + 1.0) * self.cellHeight,
             .width = (max_row + 1.0) * self.cellWidth,
         };

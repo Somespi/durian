@@ -46,7 +46,7 @@ pub const Composite = struct {
 
     pub fn griddedHeight(self: Composite, cells: c_int) c_int {
         if (self.grid.rows < cells) unreachable;
-        return (cells * @as(c_int, @intFromFloat(self.grid.cellHeight)));
+        return (cells * @as(c_int, @intFromFloat((self.grid.cellHeight))));
     }
 
 

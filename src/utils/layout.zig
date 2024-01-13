@@ -45,14 +45,14 @@ pub const Layout = struct {
     pub fn pack(self: *Layout, widget: rl.Rectangle, color: rl.Color, points: []Point) anyerror!void {
         _ = widget;
         const positioned_grid = try self.grid.getPositionedGrid(points);
-        const copied = rl.Rectangle{
-            .x = @floatFromInt(positioned_grid.x),
-            .y = @floatFromInt(positioned_grid.y),
+        const copied = rl.Rectangle {
+            .x = @floatCast(positioned_grid.x),
+            .y = @floatCast(positioned_grid.y),
             .height = @floatCast(positioned_grid.height),
             .width = @floatCast(positioned_grid.width),
         };
 
-        rl.DrawRectangle(positioned_grid.x, positioned_grid.y, @intFromFloat(copied.width), @intFromFloat(copied.height), color);
+        rl.DrawRectangle(@intFromFloat(positioned_grid.x),@intFromFloat(positioned_grid.y), @intFromFloat(copied.width), @intFromFloat(copied.height), color);
         try self.layoutItems.append(LayoutItem{ .widget = copied, .color = color });
     }
 
@@ -82,4 +82,23 @@ pub const Layout = struct {
     pub fn setGridSystem(self: *Layout, cells: c_int) void {
         self.grid = Grid.introduce(cells, @floatFromInt(self.height), @floatFromInt(self.width));
     }
+
+
+
+    pub fn drawText(self: Layout, text: [:0]const u8, points: []Point, fontSize: f32, color: rl.Color) anyerror!rl.Rectangle {
+        const font = rl.LoadFont("src/resources/poppins.ttf");
+        const fontSpacing = 1;
+        const position = try self.grid.getPositionedGrid(points);
+        //rl.SetTextureFilter(font.texture, rl.TEXTURE_FILTER_BILINEAR);
+
+        rl.DrawTextEx(font, text, rl.Vector2{.x = position.x, .y =  position.y}, fontSize, fontSpacing, color);
+        return rl.Rectangle{ .x = position.x, .y = position.y, .width = @floatCast(position.width), .height = @floatCast(position.height) };
+    }
+
+
+    pub fn packText(self: *Layout, rect: rl.Rectangle) anyerror!void {
+        try self.layoutItems.append(LayoutItem{ .widget = rect, .color = rl.BLANK });
+    }
+
+    
 };

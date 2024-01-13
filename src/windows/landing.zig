@@ -21,29 +21,30 @@ pub fn initLanding() anyerror!void {
 
     var sidebar = try composite.contain(Layout.introduce(
         composite.griddedHeight(50),
-        composite.griddedWidth(10), 
+        composite.griddedWidth(20), 
         0, 0, 
         rl.LIGHTGRAY));
+    sidebar.drawRect();
 
-
-    sidebar.setGridSystem(20);
-
+    sidebar.setGridSystem(50);
     var i: u32 = 0;
-    const col_u: usize = @intCast(sidebar.grid.columns);
-    const row_u: usize = @intCast(sidebar.grid.rows);
 
-    for (0..row_u) |row| {
-        for (0..col_u) |col| {
+    try sidebar.packText(try sidebar.drawText(
+        "Workspace", 
+        try sidebar.grid.reserveSpace(0, 0, 4, 0), 
+        32.0, 
+        rl.BLACK)
+    );
 
-
-            try sidebar.pack(
-                sidebar.rectangle(),
-                rl.GetColor(0x1A1A1A),
-                try sidebar.grid.reserveSpace(col, row, 0, 0));
-            print("col = {},row = {}\n",.{col, row});
-            try sidebar.drawBordersFor(i, rl.BLACK, 3);
-            i += 1;
-        }
+    for (0..@intCast(sidebar.grid.rows-1)) |row| {
+        for (0..@intCast(sidebar.grid.columns-1))|col| {
+        try sidebar.pack(
+            sidebar.rectangle(),
+            rl.RED,
+            try sidebar.grid.reserveSpace(col,row,0,0)
+        );
+        i += 1;
+    }
     }
 
 }
