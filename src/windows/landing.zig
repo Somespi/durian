@@ -13,9 +13,16 @@ pub fn initLanding() anyerror!void {
     defer composite.conclude();
     composite.setGridSystem(50);
 
-    var sidebar = try composite.contain(Layout.introduce(screenHeight, composite.grid.griddedWidth(10), 0, 0, rl.LIGHTGRAY));
+    var sidebar = try composite.contain(Layout.introduce(
+        screenHeight,
+        composite.grid.griddedWidth(10),
+        0, 
+        0, 
+        rl.LIGHTGRAY, 
+    "src/resources/poppins.ttf"));
     sidebar.setGridSystem(20);
 
+    
     _ = try sidebar.packRect(.{ 
         .zIndex = 3, 
         .color = rl.RED, 
@@ -27,6 +34,5 @@ pub fn initLanding() anyerror!void {
         } 
     });
 
-    //composite.draw();
     sidebar.draw();
 }

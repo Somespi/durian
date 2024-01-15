@@ -37,8 +37,8 @@ pub const Layout = struct {
     layoutItems: Arraylist(LayoutItem),
     grid: Grid,
 
-    pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, backgroundColor: rl.Color) Layout {
-        const font = rl.LoadFont("src/resources/poppins.ttf");
+    pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, backgroundColor: rl.Color, fontPath: [:0]const u8) Layout {
+        const font = rl.LoadFont(fontPath);
 
         var gpa = std.heap.GeneralPurposeAllocator(.{}){};
         var arena = std.heap.ArenaAllocator.init(gpa.allocator());

@@ -26,13 +26,6 @@ pub const Composite = struct {
         return layout;
     }
 
-    pub fn draw(self: *Composite) void {
-        for (0..self.layouts.items.len) |i| {
-    
-            self.layouts.items[i].draw();
-        }
-    }
-
     pub fn setGridSystem(self: *Composite, cells: c_int) void {
         self.grid = Grid.introduce(cells, (self.height), (self.width));
     }
