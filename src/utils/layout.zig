@@ -22,14 +22,14 @@ pub const Layout = struct {
     layoutItems: Arraylist(LayoutItem),
     grid: Grid,
 
-    pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, background_color: rl.Color) Layout {
+    pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, backgroundColor: rl.Color) Layout {
         const font = rl.LoadFont("src/resources/poppins.ttf");
 
         var gpa = std.heap.GeneralPurposeAllocator(.{}){};
         var arena = std.heap.ArenaAllocator.init(gpa.allocator());
         defer arena.deinit();
 
-        return Layout{ .font = font, .width = width, .height = height, .x = x, .y = y, .background = background_color, .layoutItems = Arraylist(LayoutItem).init(gpa.backing_allocator), .grid = undefined };
+        return Layout{ .font = font, .width = width, .height = height, .x = x, .y = y, .background = backgroundColor, .layoutItems = Arraylist(LayoutItem).init(gpa.backing_allocator), .grid = undefined };
     }
 
     pub fn conclude(self: Layout) void {
@@ -46,14 +46,14 @@ pub const Layout = struct {
     }
 
     pub fn packRect(self: *Layout, color: rl.Color, points: []Point) anyerror!usize {
-        const positioned_grid = try self.grid.getPositionedGrid(points);
+        const positionedGrid = try self.grid.getPositionedGrid(points);
         const copied = rl.Rectangle{
-            .x = @floatCast(positioned_grid.x),
-            .y = @floatCast(positioned_grid.y),
-            .height = @floatCast(positioned_grid.height),
-            .width = @floatCast(positioned_grid.width),
+            .x = @floatCast(positionedGrid.x),
+            .y = @floatCast(positionedGrid.y),
+            .height = @floatCast(positionedGrid.height),
+            .width = @floatCast(positionedGrid.width),
         };
-        rl.DrawRectangle(@intFromFloat(positioned_grid.x), @intFromFloat(positioned_grid.y), @intFromFloat(copied.width), @intFromFloat(copied.height), color);
+        rl.DrawRectangle(@intFromFloat(positionedGrid.x), @intFromFloat(positionedGrid.y), @intFromFloat(copied.width), @intFromFloat(copied.height), color);
         try self.layoutItems.append(LayoutItem{ .widget = copied, .color = color });
         return @intCast(self.layoutItems.items.len - 1);
     }
@@ -65,8 +65,8 @@ pub const Layout = struct {
         rl.DrawRectangleLinesEx(rl.Rectangle{
             .x = widget.x - thicknessFloat,
             .y = widget.y - thicknessFloat,
-            .width = widget.width +  thicknessFloat,
-            .height = widget.height +  thicknessFloat,
+            .width = widget.width + thicknessFloat,
+            .height = widget.height + thicknessFloat,
         }, thicknessFloat, color);
     }
 
@@ -98,9 +98,10 @@ pub const Layout = struct {
         return rl.Rectangle{ .x = position.x, .y = position.y, .width = @floatCast(position.width), .height = @floatCast(position.height) };
     }
 
-    pub fn packText(self: *Layout, rect: rl.Rectangle) anyerror!void {
-        try self.layoutItems.append(LayoutItem{ .widget = rect, .color = rl.RED });
-        const last_layout = self.layoutItems.items[self.layoutItems.items.len - 1];
-        rl.DrawRectangle(@intFromFloat(last_layout.widget.x), @intFromFloat(last_layout.widget.y), @intFromFloat(last_layout.widget.width), @intFromFloat(last_layout.widget.height), last_layout.color);
+    pub fn packText(self: *Layout, rect: rl.Rectangle) anyerror!usize {
+        try self.layoutItems.append(LayoutItem{ .widget = rect, .color = rl.BLANK });
+        const lastLayout = self.layoutItems.items[self.layoutItems.items.len - 1];
+        rl.DrawRectangle(@intFromFloat(lastLayout.widget.x), @intFromFloat(lastLayout.widget.y), @intFromFloat(lastLayout.widget.width), @intFromFloat(lastLayout.widget.height), lastLayout.color);
+        return self.layoutItems.items.len - 1;
     }
 };
