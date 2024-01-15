@@ -1,10 +1,14 @@
-const rl = @cImport(@cInclude("raylib.h"));
+const rl = @cImport({
+    @cInclude("raylib.h");
+    @cInclude("raymath.h");
+});
+
 const std = @import("std");
 const Arraylist = std.ArrayList;
 const Tuple = std.meta.Tuple;
 
 pub const Point = Tuple(&.{ usize, usize });
-const xyhw = struct { x: f32, y: f32, height: f64, width: f64 };
+const GridRectangle = struct { x: f32, y: f32, height: f64, width: f64 };
 
 pub const Grid = struct {
     cells: c_int,
@@ -15,21 +19,22 @@ pub const Grid = struct {
     width: f64,
     height: f64,
 
-    pub fn introduce(cells: c_int, height: f64, width: f64) Grid {
+    pub fn introduce(cells: c_int, i_height: c_int, i_width: c_int) Grid {
+        const height: f32 = @floatFromInt(i_height);
+        const width: f32 = @floatFromInt(i_width);
+
         const f_cells = @as(f64, @floatFromInt(cells));
 
-        var cellWidth = width / @sqrt(f_cells);
+        var cellWidth = width / @sqrt(f_cells); 
         var cellHeight = height / @sqrt(f_cells);
 
-        const remainingWidth =  (width - f_cells * cellWidth);
-        const remainingHeight = (height - f_cells * cellHeight);
+        const remainingWidth = (width - (f_cells * cellWidth));
+        const remainingHeight = (height - (f_cells * cellHeight));
 
         cellWidth += remainingWidth / f_cells;
         cellHeight += remainingHeight / f_cells;
 
-        const totalRows = @round(height / cellHeight);
-        const totalColumns = @round(width / cellWidth);
-        return Grid{ .cells = cells, .cellHeight = cellHeight, .cellWidth = cellWidth, .width = width, .height = height, .columns = @intFromFloat(totalColumns), .rows = @intFromFloat(totalRows) };
+        return Grid{ .cells = cells, .cellHeight = cellHeight, .cellWidth = cellWidth, .width = width, .height = height, .columns = cells, .rows = cells };
     }
 
     pub fn reserveSpace(self: Grid, column: usize, row: usize, spanColumn: usize, spanRow: usize) anyerror![]Point {
@@ -45,8 +50,8 @@ pub const Grid = struct {
         const columns_u: usize = @intCast(self.columns);
         const rows_u: usize = @intCast(self.rows);
 
-        for (column..columns_u) |col| {
-            for (row..rows_u) |rw| {
+        for (row..rows_u) |rw| {
+            for (column..columns_u) |col| {
                 try points.append(Point{ col, rw });
             }
         }
@@ -54,17 +59,19 @@ pub const Grid = struct {
         return try points.toOwnedSlice();
     }
 
-    pub fn getPositionedGrid(self: Grid, points: []Point) anyerror!xyhw {
+    pub fn getPositionedGrid(self: Grid, points: []Point) anyerror!GridRectangle {
         const max_col = @as(f64, @floatFromInt(points[points.len - 1][0]));
         const max_row = @as(f64, @floatFromInt(points[points.len - 1][1]));
         const min_col = @as(f64, @floatFromInt(points[0][0]));
         const min_row = @as(f64, @floatFromInt(points[0][1]));
 
-        return xyhw {
+        const fCells: f64 = @floatFromInt(self.cells);
+        
+        return GridRectangle {
             .x = @floatCast(min_col * self.cellWidth),
             .y = @floatCast(min_row * self.cellHeight),
-            .height = (max_col + 1.0) * self.cellHeight,
-            .width = (max_row + 1.0) * self.cellWidth,
+            .height = (max_col + 1.0) * self.cellHeight / fCells,
+            .width = (max_row + 1.0) * self.cellWidth / fCells,
         };
     }
 };

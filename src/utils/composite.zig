@@ -36,7 +36,7 @@ pub const Composite = struct {
     }
 
     pub fn setGridSystem(self: *Composite, cells: c_int) void {
-        self.grid = Grid.introduce(cells, @floatFromInt(self.height), @floatFromInt(self.width));
+        self.grid = Grid.introduce(cells, (self.height), (self.width));
     }
 
     pub fn griddedWidth(self: Composite, cells: c_int) c_int {
