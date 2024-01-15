@@ -1,7 +1,4 @@
-const rl = @cImport({
-    @cInclude("raylib.h");
-    @cInclude("raymath.h");
-});
+const rl = @import("../utils/c.zig");
 
 const Grid = @import("../utils/grid.zig").Grid;
 const Layout = @import("../utils/layout.zig").Layout;
@@ -16,13 +13,20 @@ pub fn initLanding() anyerror!void {
     defer composite.conclude();
     composite.setGridSystem(50);
 
-    var sidebar = try composite.contain(Layout.introduce(screenHeight, composite.griddedWidth(10), 0, 0, rl.LIGHTGRAY));
-    sidebar.setGridSystem(4);
+    var sidebar = try composite.contain(Layout.introduce(screenHeight, composite.grid.griddedWidth(10), 0, 0, rl.LIGHTGRAY));
+    sidebar.setGridSystem(20);
 
-    _ = try sidebar.packText(try sidebar.drawText(
-        "Workspace",
-        try sidebar.grid.reserveSpace(0, 0, 4, 0),
-        32.0,
-        rl.BLACK)
-    );
+    _ = try sidebar.packRect(.{ 
+        .zIndex = 3, 
+        .color = rl.RED, 
+        .position = .{
+            .row = 0,
+            .column = 0,
+            .spanCol = 10,
+            .spanRow = 20
+        } 
+    });
+
+    //composite.draw();
+    sidebar.draw();
 }

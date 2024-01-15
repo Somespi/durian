@@ -1,15 +1,30 @@
-const rl = @cImport({
-    @cInclude("raylib.h");
-    @cInclude("raymath.h");
-});
+const rl = @import("./c.zig");
 const std = @import("std");
 const Arraylist = std.ArrayList;
 const Grid = @import("grid.zig").Grid;
 const Point = @import("grid.zig").Point;
 
+const LayoutStyle = struct {
+    zIndex: c_int
+};
 const LayoutItem = struct {
     widget: rl.Rectangle,
     color: rl.Color,
+    style: LayoutStyle,
+    id: usize
+};
+
+const LayoutPosition = struct {
+    row: usize,
+    column: usize,
+    spanRow: usize = 0,
+    spanCol: usize = 0,
+};
+
+const LayoutRect = struct {
+    zIndex: c_int = 0,
+    color: rl.Color,
+    position: LayoutPosition,
 };
 
 pub const Layout = struct {
@@ -32,7 +47,20 @@ pub const Layout = struct {
         return Layout{ .font = font, .width = width, .height = height, .x = x, .y = y, .background = backgroundColor, .layoutItems = Arraylist(LayoutItem).init(gpa.backing_allocator), .grid = undefined };
     }
 
-    pub fn conclude(self: Layout) void {
+    pub fn draw(self: *Layout) void {
+        self.zIndexSort();
+        for (self.layoutItems.items) |item| {
+            rl.DrawRectangle(
+                @intFromFloat(item.widget.x), 
+                @intFromFloat(item.widget.y), 
+                @intFromFloat(item.widget.width), 
+                @intFromFloat(item.widget.height), 
+                item.color);
+
+        }
+
+    }
+    pub fn conclude(self: *Layout) void {
         self.layoutItems.deinit();
     }
 
@@ -40,21 +68,16 @@ pub const Layout = struct {
         rl.DrawRectangle((self.x), (self.y), (self.width), (self.height), self.background);
     }
 
-    pub fn rectangle(self: Layout) rl.Rectangle {
-        _ = self;
-        return rl.Rectangle{ .x = 0.0, .y = 0.0, .height = 0.0, .width = 0.0 };
-    }
 
-    pub fn packRect(self: *Layout, color: rl.Color, points: []Point) anyerror!usize {
-        const positionedGrid = try self.grid.getPositionedGrid(points);
+    pub fn packRect(self: *Layout, layoutRect: LayoutRect) anyerror!usize {
+        const positionedGrid = try self.grid.getPositionedGrid(try self.grid.reserveSpace(layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow));
         const copied = rl.Rectangle{
             .x = @floatCast(positionedGrid.x),
             .y = @floatCast(positionedGrid.y),
             .height = @floatCast(positionedGrid.height),
             .width = @floatCast(positionedGrid.width),
         };
-        rl.DrawRectangle(@intFromFloat(positionedGrid.x), @intFromFloat(positionedGrid.y), @intFromFloat(copied.width), @intFromFloat(copied.height), color);
-        try self.layoutItems.append(LayoutItem{ .widget = copied, .color = color });
+        try self.layoutItems.append(LayoutItem{ .widget = copied, .color = layoutRect.color, .style = LayoutStyle{.zIndex = layoutRect.zIndex}, .id = self.layoutItems.items.len  });
         return @intCast(self.layoutItems.items.len - 1);
     }
 
@@ -70,21 +93,6 @@ pub const Layout = struct {
         }, thicknessFloat, color);
     }
 
-    pub fn handleResize(self: *Layout, newWidth: c_int, newHeight: c_int) void {
-        const widthRatio = @as(f32, @floatFromInt(newWidth)) / @as(f32, @floatFromInt(self.width));
-        const heightRatio = @as(f32, @floatFromInt(newHeight)) / @as(f32, @floatFromInt(self.height));
-
-        for (0..self.layoutItems.items.len) |i| {
-            var item = &self.layoutItems.items[i];
-            item.widget.x = item.widget.x * widthRatio;
-            item.widget.y = item.widget.y * heightRatio;
-            item.widget.width = item.widget.width * widthRatio;
-            item.widget.height = item.widget.height * heightRatio;
-        }
-        self.width = newWidth;
-        self.height = newHeight;
-    }
-
     pub fn setGridSystem(self: *Layout, cells: c_int) void {
         self.grid = Grid.introduce(cells, (self.height), (self.width));
     }
@@ -98,10 +106,35 @@ pub const Layout = struct {
         return rl.Rectangle{ .x = position.x, .y = position.y, .width = @floatCast(position.width), .height = @floatCast(position.height) };
     }
 
-    pub fn packText(self: *Layout, rect: rl.Rectangle) anyerror!usize {
-        try self.layoutItems.append(LayoutItem{ .widget = rect, .color = rl.BLANK });
+    pub fn packText(self: *Layout, layoutRect: LayoutRect) anyerror!usize {
+
+        const positionedGrid = try self.grid.getPositionedGrid(try self.grid.reserveSpace(layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow));
+        const copied = rl.Rectangle{
+            .x = @floatCast(positionedGrid.x),
+            .y = @floatCast(positionedGrid.y),
+            .height = @floatCast(positionedGrid.height),
+            .width = @floatCast(positionedGrid.width),
+        };
+        
+        try self.layoutItems.append(LayoutItem{.id = self.layoutItems.items.len , .widget = copied, .color = rl.BLANK, .style = LayoutStyle{.zIndex = layoutRect.zIndex } });
         const lastLayout = self.layoutItems.items[self.layoutItems.items.len - 1];
-        rl.DrawRectangle(@intFromFloat(lastLayout.widget.x), @intFromFloat(lastLayout.widget.y), @intFromFloat(lastLayout.widget.width), @intFromFloat(lastLayout.widget.height), lastLayout.color);
+        _ = lastLayout;
         return self.layoutItems.items.len - 1;
     }
+
+    fn zIndexSort(self: *Layout) void {
+        std.sort.heap(LayoutItem, self.layoutItems.items, {}, Layout.helperSortFn);
+
+    }
+
+    fn helperSortFn(context: void, a: LayoutItem, b: LayoutItem) bool {
+        _ = context;
+        if (a.style.zIndex < b.style.zIndex) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 };

@@ -1,8 +1,4 @@
-const rl = @cImport({
-    @cInclude("raylib.h");
-    @cInclude("raymath.h");
-});
-
+const rl = @import("./c.zig");
 const std = @import("std");
 const Arraylist = std.ArrayList;
 const Tuple = std.meta.Tuple;
@@ -25,7 +21,7 @@ pub const Grid = struct {
 
         const fCells = @as(f64, @floatFromInt(cells));
 
-        var cellWidth = width / @sqrt(fCells); 
+        var cellWidth = width / @sqrt(fCells);
         var cellHeight = height / @sqrt(fCells);
 
         const remainingWidth = (width - (fCells * cellWidth));
@@ -40,38 +36,47 @@ pub const Grid = struct {
     pub fn reserveSpace(self: Grid, column: usize, row: usize, spanColumn: usize, spanRow: usize) anyerror![]Point {
         var gpa = std.heap.GeneralPurposeAllocator(.{}){};
         var arena = std.heap.ArenaAllocator.init(gpa.allocator());
+        defer arena.deinit();
 
-        var points = Arraylist(Point).init(arena.allocator());
+        var points = Arraylist(Point).init(gpa.backing_allocator);
         defer points.deinit();
 
-        if (!((self.rows >= row) or (self.rows >= spanRow) or
-            (self.columns >= column) or (self.columns >= spanColumn))) unreachable;
+        if ((self.rows < row) or (self.rows < spanRow) or
+            (self.columns < column) or (self.columns < spanColumn)) std.debug.panic("Invalid grid dimensions: row, spanRow, column, or spanColumn exceeds grid dimensions.", .{});
 
-        const columnsU: usize = @intCast(self.columns);
-        const rowsU: usize = @intCast(self.rows);
-
-        for (row..rowsU) |rw| {
-            for (column..columnsU) |col| {
-                try points.append(Point{ col, rw });
+        
+        for ((column)..(spanColumn + 1)) |col| {
+            for (row..(spanRow + 1)) |rw| {
+                try points.append(Point { col , rw });
             }
         }
+
 
         return try points.toOwnedSlice();
     }
 
     pub fn getPositionedGrid(self: Grid, points: []Point) anyerror!GridRectangle {
+        if (!(points.len > 0)) std.debug.panic("No points were registered, failing program", .{});
         const maxCol = @as(f64, @floatFromInt(points[points.len - 1][0]));
         const maxRow = @as(f64, @floatFromInt(points[points.len - 1][1]));
         const minCol = @as(f64, @floatFromInt(points[0][0]));
         const minRow = @as(f64, @floatFromInt(points[0][1]));
 
-        const fCells: f64 = @floatFromInt(self.cells);
-
-        return GridRectangle {
+        return GridRectangle{
             .x = @floatCast(minCol * self.cellWidth),
             .y = @floatCast(minRow * self.cellHeight),
-            .height = (maxCol + 1.0) * self.cellHeight / fCells,
-            .width = (maxRow + 1.0) * self.cellWidth / fCells,
+            .height = (maxRow + 1.0) * self.cellHeight,
+            .width = (maxCol + 1.0) * self.cellWidth,
         };
+    }
+
+    pub fn griddedWidth(self: Grid, cells: c_int) c_int {
+        if (self.columns < cells) std.debug.panic("Cells is more than Columns.\n", .{});
+        return (cells * @as(c_int, @intFromFloat(self.cellWidth)));
+    }
+
+    pub fn griddedHeight(self: Grid, cells: c_int) c_int {
+        if (self.columns < cells) std.debug.panic("Cells is more than Columns.\n", .{});
+        return (cells * @as(c_int, @intFromFloat((self.cellHeight))));
     }
 };
