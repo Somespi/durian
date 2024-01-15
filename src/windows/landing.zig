@@ -27,11 +27,16 @@ pub fn initLanding() anyerror!void {
         .zIndex = 3, 
         .color = rl.RED, 
         .position = .{
-            .row = 0,
-            .column = 0,
+            .row = 3,
+            .column = 3,
             .spanCol = 10,
-            .spanRow = 20
-        } 
+            .spanRow = 10
+        },
+        .border = .{
+            .color = rl.BLUE,
+            .thick = 5,
+            .raduis = 0.6,
+        }
     });
 
     sidebar.draw();

@@ -5,7 +5,8 @@ const Grid = @import("grid.zig").Grid;
 const Point = @import("grid.zig").Point;
 
 const LayoutStyle = struct {
-    zIndex: c_int
+    zIndex: c_int,
+    border: LayoutBorder = undefined
 };
 const LayoutItem = struct {
     widget: rl.Rectangle,
@@ -21,8 +22,16 @@ const LayoutPosition = struct {
     spanCol: usize = 0,
 };
 
+const LayoutBorder = struct {
+    color: rl.Color, 
+    thick: f32 = 1.0,
+    raduis: f32 = 0.0,
+    segments: c_int = 5
+};
+
 const LayoutRect = struct {
     zIndex: c_int = 0,
+    border: LayoutBorder = undefined,
     color: rl.Color,
     position: LayoutPosition,
 };
@@ -50,12 +59,19 @@ pub const Layout = struct {
     pub fn draw(self: *Layout) void {
         self.zIndexSort();
         for (self.layoutItems.items) |item| {
-            rl.DrawRectangle(
-                @intFromFloat(item.widget.x), 
-                @intFromFloat(item.widget.y), 
-                @intFromFloat(item.widget.width), 
-                @intFromFloat(item.widget.height), 
-                item.color);
+
+            if (item.style.border.raduis > 0.0) {
+                rl.DrawRectangleRounded(item.widget, item.style.border.raduis, item.style.border.segments, item.color);
+                rl.DrawRectangleRoundedLines(item.widget, item.style.border.raduis, item.style.border.segments, item.style.border.thick, item.style.border.color);
+            } else {
+                rl.DrawRectangle(
+                    @intFromFloat(item.widget.x), 
+                    @intFromFloat(item.widget.y), 
+                    @intFromFloat(item.widget.width), 
+                    @intFromFloat(item.widget.height), 
+                    item.color);
+                rl.DrawRectangleLinesEx(item.widget, item.style.border.thick, item.color);
+            }
 
         }
 
@@ -77,21 +93,16 @@ pub const Layout = struct {
             .height = @floatCast(positionedGrid.height),
             .width = @floatCast(positionedGrid.width),
         };
-        try self.layoutItems.append(LayoutItem{ .widget = copied, .color = layoutRect.color, .style = LayoutStyle{.zIndex = layoutRect.zIndex}, .id = self.layoutItems.items.len  });
+        try self.layoutItems.append(
+            LayoutItem{ 
+                .widget = copied, 
+                .color = layoutRect.color,
+                .style = LayoutStyle{.zIndex = layoutRect.zIndex, .border = layoutRect.border}, 
+                .id = self.layoutItems.items.len  
+                });
         return @intCast(self.layoutItems.items.len - 1);
     }
 
-    pub fn drawBordersFor(self: Layout, index: usize, color: rl.Color, thickness: usize) anyerror!void {
-        const widget = self.layoutItems.items[index].widget;
-        const thicknessFloat: f32 = @floatFromInt(thickness);
-
-        rl.DrawRectangleLinesEx(rl.Rectangle{
-            .x = widget.x - thicknessFloat,
-            .y = widget.y - thicknessFloat,
-            .width = widget.width + thicknessFloat,
-            .height = widget.height + thicknessFloat,
-        }, thicknessFloat, color);
-    }
 
     pub fn setGridSystem(self: *Layout, cells: c_int) void {
         self.grid = Grid.introduce(cells, (self.height), (self.width));
