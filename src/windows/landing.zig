@@ -4,15 +4,14 @@ const Grid = @import("../utils/grid.zig").Grid;
 const Layout = @import("../utils/layout.zig").Layout;
 const Composite = @import("../utils/composite.zig").Composite;
 
-pub fn initLanding() anyerror!void {
+pub fn init() anyerror!Composite {
     const screenHeight = rl.GetScreenHeight();
     const screenWidth = rl.GetScreenWidth();
 
     var composite = Composite.introduce(screenHeight, screenWidth, 0, 0);
-    defer composite.conclude();
     composite.setGridSystem(50);
 
-    var sidebar = try composite.contain(.{
+    var sidebar: *Layout = try composite.contain(.{
         .color = rl.GetColor(0x001A1A1A),
         .font = "src/resources/poppins.ttf",
         .border = .{
@@ -27,7 +26,16 @@ pub fn initLanding() anyerror!void {
         },
         .grid = 20
     });
+    
+    _ = try sidebar.pack(.{
+        .position = .{
+            .column = 0,
+            .row = 0,
+        },
+        .color = rl.RED
+    });
 
-
-    sidebar.draw();
+    
+    return composite;
 }
+

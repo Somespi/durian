@@ -15,12 +15,18 @@ const LayoutPosition = struct {
 const LayoutStyle = struct { zIndex: c_int, border: LayoutBorder = undefined };
 const LayoutRect = struct { border: LayoutBorder = undefined, color: rl.Color, position: LayoutPosition, font: [:0]const u8, grid: c_int };
 
+const CompositeItem = struct {
+    border: LayoutBorder = undefined, 
+    color: rl.Color, 
+    layout: Layout
+};
+
 pub const Composite = struct {
     width: c_int,
     height: c_int,
     x: c_int,
     y: c_int,
-    layouts: Arraylist(Layout),
+    layouts: Arraylist(CompositeItem),
     grid: Grid,
 
     pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int) Composite {
@@ -28,29 +34,15 @@ pub const Composite = struct {
         var arena = std.heap.ArenaAllocator.init(gpa.allocator());
         defer arena.deinit();
 
-        return Composite{ .width = width, .height = height, .x = x, .y = y, .layouts = Arraylist(Layout).init(gpa.backing_allocator), .grid = undefined };
+        return Composite{ .width = width, .height = height, .x = x, .y = y, .layouts = Arraylist(CompositeItem).init(gpa.backing_allocator), .grid = undefined };
     }
 
-    pub fn contain(self: *Composite, layoutRect: LayoutRect) anyerror!Layout {
+    pub fn contain(self: *Composite, layoutRect: LayoutRect) anyerror!*Layout {
         const positionedGrid = try self.grid.getPositionedGrid(try self.grid.reserveSpace(layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow));
         var layout = Layout.introduce(@intFromFloat(positionedGrid.height), @intFromFloat(positionedGrid.width), @intFromFloat(positionedGrid.x), @intFromFloat(positionedGrid.y), layoutRect.color, layoutRect.font);
-        const widget = rl.Rectangle{ .x = positionedGrid.x, .y = positionedGrid.y, .width = @floatCast(positionedGrid.width), .height = @floatCast(positionedGrid.height) };
-
-        if (layoutRect.border.raduis > 0.0) {
-            rl.DrawRectangleRounded(widget, layoutRect.border.raduis, layoutRect.border.segments, layoutRect.color);
-            rl.DrawRectangleRoundedLines(widget, layoutRect.border.raduis, layoutRect.border.segments, layoutRect.border.thick, layoutRect.border.color);
-        } else {
-            rl.DrawRectangle(@intFromFloat(widget.x), @intFromFloat(widget.y), @intFromFloat(widget.width), @intFromFloat(widget.height), layoutRect.color);
-            rl.DrawRectangleLinesEx(rl.Rectangle{
-                .x = widget.x - layoutRect.border.thick,
-                .y = widget.y - layoutRect.border.thick,
-                .width = widget.width + 2 * layoutRect.border.thick,
-                .height = widget.height + 2 * layoutRect.border.thick,
-            }, layoutRect.border.thick, layoutRect.border.color);
-        }
         layout.setGridSystem(layoutRect.grid);
-        try self.layouts.append(layout);
-        return layout;
+        try self.layouts.append(CompositeItem {.border = layoutRect.border, .color = layoutRect.color, .layout = layout});
+        return &self.layouts.items[self.layouts.items.len - 1].layout;
     }
 
     pub fn setGridSystem(self: *Composite, cells: c_int) void {
@@ -59,8 +51,14 @@ pub const Composite = struct {
 
     pub fn conclude(self: Composite) void {
         for (0..self.layouts.items.len) |i| {
-            self.layouts.items[i].conclude();
+            self.layouts.items[i].layout.conclude();
         }
         self.layouts.deinit();
+    }
+
+    pub fn draw(self: *Composite) void {
+        for (0..self.layouts.items.len) |i| {
+            self.layouts.items[i].layout.draw();
+        }
     }
 };

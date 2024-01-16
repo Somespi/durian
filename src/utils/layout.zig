@@ -9,8 +9,8 @@ const LayoutBorder = struct { color: rl.Color, thick: f32 = 5.0, raduis: f32 = 0
 const LayoutPosition = struct {row: usize,column: usize,spanRow: usize = 0,spanCol: usize = 0,};
 
 const LayoutStyle = struct { zIndex: c_int, border: LayoutBorder = undefined };
-const LayoutRect = struct {text: layoutContent = undefined,zIndex: c_int = 0,border: LayoutBorder = undefined,color: rl.Color,position: LayoutPosition,};
-const LayoutItem = struct { widget: rl.Rectangle, text: layoutContent = undefined, color: rl.Color, style: LayoutStyle, id: usize };
+const LayoutRect = struct {text: layoutContent = undefined,zIndex: c_int = 0,border: LayoutBorder = undefined,color: rl.Color,position: LayoutPosition, id: isize = -1};
+const LayoutItem = struct { widget: rl.Rectangle, text: layoutContent = undefined, color: rl.Color, style: LayoutStyle, id: usize  };
 
 pub const Layout = struct {
     width: c_int,
@@ -61,7 +61,7 @@ pub const Layout = struct {
         rl.DrawRectangle((self.x), (self.y), (self.width), (self.height), self.background);
     }
 
-    pub fn pack(self: *Layout, layoutRect: LayoutRect) anyerror!usize {
+    pub fn pack(self: *Layout, layoutRect: LayoutRect) anyerror!void {
         const positionedGrid = try self.grid.getPositionedGrid(try self.grid.reserveSpace(layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow));
         const copied = rl.Rectangle{
             .x = @floatCast(positionedGrid.x),
@@ -69,8 +69,8 @@ pub const Layout = struct {
             .height = @floatCast(positionedGrid.height),
             .width = @floatCast(positionedGrid.width),
         };
-        try self.layoutItems.append(LayoutItem{ .widget = copied, .color = layoutRect.color, .style = LayoutStyle{ .zIndex = layoutRect.zIndex, .border = layoutRect.border },.text = layoutRect.text, .id = self.layoutItems.items.len });
-        return @intCast(self.layoutItems.items.len - 1);
+        const id: usize = if (layoutRect.id != -1) @intCast(layoutRect.id) else self.layoutItems.items.len;
+        try self.layoutItems.append(LayoutItem{ .widget = copied, .color = layoutRect.color, .style = LayoutStyle{ .zIndex = layoutRect.zIndex, .border = layoutRect.border },.text = layoutRect.text, .id = id});
     }
 
     pub fn setGridSystem(self: *Layout, cells: c_int) void {
