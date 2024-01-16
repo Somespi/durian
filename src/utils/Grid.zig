@@ -33,13 +33,8 @@ pub fn introduce(cells: c_int, i_height: c_int, i_width: c_int) Grid {
     return Grid{ .cells = cells, .cellHeight = cellHeight, .cellWidth = cellWidth, .width = width, .height = height, .columns = cells, .rows = cells };
 }
 
-pub fn reserveSpace(self: Grid, column: usize, row: usize, spanColumn: usize, spanRow: usize) anyerror![]Point {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    var arena = std.heap.ArenaAllocator.init(gpa.allocator());
-    defer arena.deinit();
-
-    var points = Arraylist(Point).init(gpa.backing_allocator);
-    defer points.deinit();
+pub fn reserveSpace(self: Grid, gpa: std.mem.Allocator, column: usize, row: usize, spanColumn: usize, spanRow: usize) anyerror![]Point {
+    var points = Arraylist(Point).init(gpa);
 
     if ((self.rows < row) or (self.rows < spanRow) or
         (self.columns < column) or (self.columns < spanColumn)) std.debug.panic("Invalid grid dimensions: row, spanRow, column, or spanColumn exceeds grid dimensions.", .{});

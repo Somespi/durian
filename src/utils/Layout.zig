@@ -66,14 +66,22 @@ pub fn drawRect(self: Layout) void {
 }
 
 pub fn pack(self: *Layout, layoutRect: Rectangle) anyerror!void {
-    const positionedGrid = try self.grid.getPositionedGrid(try self.grid.reserveSpace(layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow));
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+
+    const points = try self.grid.reserveSpace(gpa.allocator(), layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+    defer gpa.allocator().free(&points);
+
+    const positionedGrid = try self.grid.getPositionedGrid(points);
+
     const copied = rl.Rectangle{
         .x = @floatCast(positionedGrid.x),
         .y = @floatCast(positionedGrid.y),
         .height = @floatCast(positionedGrid.height),
         .width = @floatCast(positionedGrid.width),
     };
+
     const id: usize = if (layoutRect.id != -1) @intCast(layoutRect.id) else self.layoutItems.items.len;
+
     try self.layoutItems.append(Item{ .widget = copied, .color = layoutRect.color, .style = Style{ .zIndex = layoutRect.zIndex, .border = layoutRect.border }, .text = layoutRect.text, .id = id });
 }
 

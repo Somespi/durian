@@ -21,7 +21,12 @@ pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int) Composite {
 }
 
 pub fn contain(self: *Composite, layoutRect: Layout.Rectangle) anyerror!*Layout {
-    const positionedGrid = try self.grid.getPositionedGrid(try self.grid.reserveSpace(layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow));
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+
+    const points = try self.grid.reserveSpace(gpa.allocator(), layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+    defer gpa.allocator().free(&points);
+
+    const positionedGrid = try self.grid.getPositionedGrid(points);
 
     var layout = Layout.introduce(@intFromFloat(positionedGrid.height), @intFromFloat(positionedGrid.width), @intFromFloat(positionedGrid.x), @intFromFloat(positionedGrid.y), layoutRect.color, layoutRect.font);
 
