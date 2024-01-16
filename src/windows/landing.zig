@@ -3,7 +3,6 @@ const rl = @import("../utils/c.zig");
 const Grid = @import("../utils/grid.zig").Grid;
 const Layout = @import("../utils/layout.zig").Layout;
 const Composite = @import("../utils/composite.zig").Composite;
-const print = @import("std").debug.print;
 
 pub fn initLanding() anyerror!void {
     const screenHeight = rl.GetScreenHeight();
@@ -23,9 +22,13 @@ pub fn initLanding() anyerror!void {
     sidebar.setGridSystem(20);
 
     
-    _ = try sidebar.packRect(.{ 
+    _ = try sidebar.pack(.{ 
+        .text = .{
+            .content = "Hello, World!",
+            .size = 30,
+        },
         .zIndex = 3, 
-        .color = rl.RED, 
+        .color = rl.BLANK, 
         .position = .{
             .row = 3,
             .column = 3,
@@ -35,7 +38,6 @@ pub fn initLanding() anyerror!void {
         .border = .{
             .color = rl.BLUE,
             .thick = 5,
-            .raduis = 0.6,
         }
     });
 
