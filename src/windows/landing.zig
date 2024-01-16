@@ -12,34 +12,22 @@ pub fn initLanding() anyerror!void {
     defer composite.conclude();
     composite.setGridSystem(50);
 
-    var sidebar = try composite.contain(Layout.introduce(
-        screenHeight,
-        composite.grid.griddedWidth(10),
-        0, 
-        0, 
-        rl.LIGHTGRAY, 
-    "src/resources/poppins.ttf"));
-    sidebar.setGridSystem(20);
-
-    
-    _ = try sidebar.pack(.{ 
-        .text = .{
-            .content = "Hello, World!",
-            .size = 30,
-        },
-        .zIndex = 3, 
-        .color = rl.BLANK, 
-        .position = .{
-            .row = 3,
-            .column = 3,
-            .spanCol = 10,
-            .spanRow = 10
-        },
+    var sidebar = try composite.contain(.{
+        .color = rl.GetColor(0x001A1A1A),
+        .font = "src/resources/poppins.ttf",
         .border = .{
-            .color = rl.BLUE,
+            .color = rl.BLACK,
             .thick = 5,
-        }
+        },
+        .position = .{
+            .row =  0,
+            .column = 0,
+            .spanCol = 10,
+            .spanRow = 50
+        },
+        .grid = 20
     });
+
 
     sidebar.draw();
 }
