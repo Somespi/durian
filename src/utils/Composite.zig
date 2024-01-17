@@ -11,30 +11,27 @@ x: c_int,
 y: c_int,
 layouts: Arraylist(Item),
 grid: Grid,
+gpa: std.mem.Allocator,
 
 const Rectangle = struct { border: Layout.Border = undefined, color: rl.Color, position: Layout.Position, font: [:0]const u8, grid: c_int };
 const Item = struct { border: Layout.Border = undefined, color: rl.Color, layout: Layout };
 
-pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int) Composite {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-
-    return Composite{ .width = width, .height = height, .x = x, .y = y, .layouts = Arraylist(Item).init(gpa.allocator()), .grid = undefined };
+pub fn introduce(gpa: std.mem.Allocator, height: c_int, width: c_int, x: c_int, y: c_int) Composite {
+    return Composite{ .width = width, .height = height, .x = x, .y = y, .layouts = Arraylist(Item).init(gpa), .grid = undefined, .gpa = gpa };
 }
 
 pub fn contain(self: *Composite, layoutRect: Rectangle) anyerror!*Layout {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-
-    var points = try self.grid.reserveSpace(allocator, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
-    defer allocator.free(points);
+    var points = try self.grid.reserveSpace(self.gpa, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+    defer self.gpa.free(points);
 
     const positionedGrid = try self.grid.getPositionedGrid(points);
 
-    var layout = Layout.introduce(@intFromFloat(positionedGrid.height), @intFromFloat(positionedGrid.width), @intFromFloat(positionedGrid.x), @intFromFloat(positionedGrid.y), layoutRect.color, layoutRect.font);
+    var layout = Layout.introduce(self.gpa, @intFromFloat(positionedGrid.height), @intFromFloat(positionedGrid.width), @intFromFloat(positionedGrid.x), @intFromFloat(positionedGrid.y), layoutRect.color, layoutRect.font);
 
     layout.setGridSystem(layoutRect.grid);
 
-    try self.layouts.append(Item{ .border = layoutRect.border, .color = layoutRect.color, .layout = layout });
+    try self.layouts.append(.{ .border = layoutRect.border, .color = layoutRect.color, .layout = layout });
+
     return &self.layouts.items[self.layouts.items.len - 1].layout;
 }
 

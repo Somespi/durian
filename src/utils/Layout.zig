@@ -12,6 +12,7 @@ background: rl.Color,
 font: rl.Font,
 layoutItems: Arraylist(Item),
 grid: Grid,
+gpa: std.mem.Allocator,
 
 pub const Content = struct { content: [:0]const u8, size: f32 = 16.0, spacing: f32 = 1.0, color: rl.Color = rl.BLACK };
 pub const Border = struct { color: rl.Color, thick: f32 = 5.0, raduis: f32 = 0.0, segments: c_int = 5 };
@@ -26,12 +27,10 @@ pub const Rectangle = struct { text: Content = undefined, zIndex: c_int = 0, bor
 
 pub const Item = struct { widget: rl.Rectangle, text: Content = undefined, color: rl.Color, style: Style, id: usize };
 
-pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, backgroundColor: rl.Color, fontPath: [:0]const u8) Layout {
+pub fn introduce(gpa: std.mem.Allocator, height: c_int, width: c_int, x: c_int, y: c_int, backgroundColor: rl.Color, fontPath: [:0]const u8) Layout {
     const font = rl.LoadFont(fontPath);
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-
-    return Layout{ .font = font, .width = width, .height = height, .x = x, .y = y, .background = backgroundColor, .layoutItems = Arraylist(Item).init(gpa.allocator()), .grid = undefined };
+    return Layout{ .font = font, .width = width, .height = height, .x = x, .y = y, .background = backgroundColor, .layoutItems = Arraylist(Item).init(gpa), .grid = undefined, .gpa = gpa };
 }
 
 pub fn draw(self: *Layout) void {
@@ -64,11 +63,8 @@ pub fn drawRect(self: Layout) void {
 }
 
 pub fn pack(self: *Layout, layoutRect: Rectangle) anyerror!void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-
-    var points = try self.grid.reserveSpace(allocator, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
-    defer allocator.free(points);
+    var points = try self.grid.reserveSpace(self.gpa, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+    defer self.gpa.free(points);
 
     const positionedGrid = try self.grid.getPositionedGrid(points);
 
@@ -81,7 +77,7 @@ pub fn pack(self: *Layout, layoutRect: Rectangle) anyerror!void {
 
     const id: usize = if (layoutRect.id != -1) @intCast(layoutRect.id) else self.layoutItems.items.len;
 
-    try self.layoutItems.append(Item{ .widget = copied, .color = layoutRect.color, .style = Style{ .zIndex = layoutRect.zIndex, .border = layoutRect.border }, .text = layoutRect.text, .id = id });
+    try self.layoutItems.append(.{ .widget = copied, .color = layoutRect.color, .style = Style{ .zIndex = layoutRect.zIndex, .border = layoutRect.border }, .text = layoutRect.text, .id = id });
 }
 
 pub fn setGridSystem(self: *Layout, cells: c_int) void {
