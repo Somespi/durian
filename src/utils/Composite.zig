@@ -23,9 +23,10 @@ pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int) Composite {
 
 pub fn contain(self: *Composite, layoutRect: Rectangle) anyerror!*Layout {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
 
-    var points = try self.grid.reserveSpace(gpa.allocator(), layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
-    defer gpa.allocator().free(points);
+    var points = try self.grid.reserveSpace(allocator, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+    defer allocator.free(points);
 
     const positionedGrid = try self.grid.getPositionedGrid(points);
 

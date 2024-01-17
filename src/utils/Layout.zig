@@ -30,10 +30,8 @@ pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, backgroundColo
     const font = rl.LoadFont(fontPath);
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    var arena = std.heap.ArenaAllocator.init(gpa.allocator());
-    defer arena.deinit();
 
-    return Layout{ .font = font, .width = width, .height = height, .x = x, .y = y, .background = backgroundColor, .layoutItems = Arraylist(Item).init(gpa.backing_allocator), .grid = undefined };
+    return Layout{ .font = font, .width = width, .height = height, .x = x, .y = y, .background = backgroundColor, .layoutItems = Arraylist(Item).init(gpa.allocator()), .grid = undefined };
 }
 
 pub fn draw(self: *Layout) void {
@@ -67,9 +65,10 @@ pub fn drawRect(self: Layout) void {
 
 pub fn pack(self: *Layout, layoutRect: Rectangle) anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
 
-    const points = try self.grid.reserveSpace(gpa.allocator(), layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
-    defer gpa.allocator().free(points);
+    var points = try self.grid.reserveSpace(allocator, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+    defer allocator.free(points);
 
     const positionedGrid = try self.grid.getPositionedGrid(points);
 
