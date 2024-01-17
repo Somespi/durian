@@ -1,8 +1,7 @@
-const rl = @import("./utils/c.zig");
-const Landing = @import("windows/Landing.zig");
-const Composite = @import("./utils/composite.zig").Composite;
-pub fn main() anyerror!void {
+const rl = @import("utils/raylib.zig");
+const Composite = @import("utils/Composite.zig");
 
+pub fn main() anyerror!void {
     rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE);
     rl.SetTraceLogLevel(rl.LOG_NONE);
 
@@ -11,16 +10,15 @@ pub fn main() anyerror!void {
 
     rl.SetWindowMinSize(800, 400);
     rl.SetTargetFPS(60);
-    
-    var landing: Composite = try Landing.init();
+
+    var landing = try @import("windows/landing.zig").init();
     defer landing.conclude();
 
     while (!rl.WindowShouldClose()) {
         rl.ClearBackground(rl.GetColor(0x23222300));
-        rl.BeginDrawing();
-        defer rl.EndDrawing();
 
-    
+        rl.BeginDrawing();
         landing.draw();
+        rl.EndDrawing();
     }
 }
