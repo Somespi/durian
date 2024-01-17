@@ -49,6 +49,24 @@ pub fn conclude(self: Composite) void {
 
 pub fn draw(self: *Composite) void {
     for (0..self.layouts.items.len) |i| {
+        const widget = rl.Rectangle{
+            .x = @floatFromInt(self.layouts.items[i].layout.x),
+            .y = @floatFromInt(self.layouts.items[i].layout.y),
+            .height = @floatFromInt(self.layouts.items[i].layout.height),
+            .width = @floatFromInt(self.layouts.items[i].layout.width),
+        };
+        if (self.layouts.items[i].border.raduis > 0.0) {
+            rl.DrawRectangleRounded(widget, self.layouts.items[i].border.raduis, self.layouts.items[i].border.segments, self.layouts.items[i].color);
+            rl.DrawRectangleRoundedLines(widget, self.layouts.items[i].border.raduis, self.layouts.items[i].border.segments, self.layouts.items[i].border.thick, self.layouts.items[i].border.color);
+        } else {
+            rl.DrawRectangle(@intFromFloat(widget.x), @intFromFloat(widget.y), @intFromFloat(widget.width), @intFromFloat(widget.height), self.layouts.items[i].color);
+            rl.DrawRectangleLinesEx(rl.Rectangle{
+                .x = widget.x - self.layouts.items[i].border.thick,
+                .y = widget.y - self.layouts.items[i].border.thick,
+                .width = widget.width + 2 * self.layouts.items[i].border.thick,
+                .height = widget.height + 2 * self.layouts.items[i].border.thick,
+            }, self.layouts.items[i].border.thick, self.layouts.items[i].border.color);
+        }
         self.layouts.items[i].layout.draw();
     }
 }
