@@ -4,10 +4,7 @@ const Grid = @import("Grid.zig");
 const Arraylist = std.ArrayList;
 const Layout = @This();
 
-width: c_int,
-height: c_int,
-x: c_int,
-y: c_int,
+position: Position,
 background: rl.Color,
 font: rl.Font,
 layoutItems: Arraylist(Item),
@@ -27,10 +24,10 @@ pub const Rectangle = struct { text: Content = undefined, zIndex: c_int = 0, bor
 
 pub const Item = struct { widget: rl.Rectangle, text: Content = undefined, color: rl.Color, style: Style, id: usize };
 
-pub fn introduce(gpa: std.mem.Allocator, height: c_int, width: c_int, x: c_int, y: c_int, backgroundColor: rl.Color, fontPath: [:0]const u8) Layout {
+pub fn introduce(gpa: std.mem.Allocator, row: usize,column: usize,spanRow: usize,spanCol: usize, backgroundColor: rl.Color, fontPath: [:0]const u8) Layout {
     const font = rl.LoadFont(fontPath);
 
-    return Layout{ .font = font, .width = width, .height = height, .x = x, .y = y, .background = backgroundColor, .layoutItems = Arraylist(Item).init(gpa), .grid = undefined, .gpa = gpa };
+    return Layout{ .font = font, .position = .{.row = row,.column = column, .spanRow = spanRow, .spanCol = spanCol }, .background = backgroundColor, .layoutItems = Arraylist(Item).init(gpa), .grid = undefined, .gpa = gpa };
 }
 
 pub fn draw(self: *Layout) void {
@@ -58,9 +55,6 @@ pub fn conclude(self: *Layout) void {
     self.layoutItems.deinit();
 }
 
-pub fn drawRect(self: Layout) void {
-    rl.DrawRectangle((self.x), (self.y), (self.width), (self.height), self.background);
-}
 
 pub fn pack(self: *Layout, layoutRect: Rectangle) anyerror!void {
 
@@ -81,8 +75,12 @@ pub fn pack(self: *Layout, layoutRect: Rectangle) anyerror!void {
     try self.layoutItems.append(.{ .widget = copied, .color = layoutRect.color, .style = Style{ .zIndex = layoutRect.zIndex, .border = layoutRect.border }, .text = layoutRect.text, .id = id });
 }
 
-pub fn setGridSystem(self: *Layout, cells: c_int) void {
-    self.grid = Grid.introduce(cells, (self.height), (self.width));
+pub fn setGridSystem(self: *Layout, cells: c_int) anyerror!void {
+    var points = try self.grid.reserveSpace(self.gpa, self.position.column, self.position.row, self.position.spanCol, self.position.spanRow);
+    defer self.gpa.free(points);
+
+    const positionedGrid = try self.grid.getPositionedGrid(points);
+    self.grid = Grid.introduce(cells, @intFromFloat(positionedGrid.height), @intFromFloat(positionedGrid.width));
 }
 
 fn zIndexSort(self: *Layout) void {

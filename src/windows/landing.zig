@@ -9,7 +9,7 @@ pub fn init(gpa: std.mem.Allocator) anyerror!Composite {
     const screenWidth = rl.GetScreenWidth();
 
     var composite = Composite.introduce(gpa, screenHeight, screenWidth, 0, 0);
-    composite.setGridSystem(50);
+    _ = try composite.setGridSystem(50);
 
     var sidebar = try composite.contain(.{ 
         .color = rl.GetColor(0x001A1A1A), 

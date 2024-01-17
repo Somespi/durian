@@ -21,21 +21,16 @@ pub fn introduce(gpa: std.mem.Allocator, height: c_int, width: c_int, x: c_int, 
 }
 
 pub fn contain(self: *Composite, layoutRect: Rectangle) anyerror!*Layout {
-    var points = try self.grid.reserveSpace(self.gpa, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
-    defer self.gpa.free(points);
 
-    const positionedGrid = try self.grid.getPositionedGrid(points);
-
-    var layout = Layout.introduce(self.gpa, @intFromFloat(positionedGrid.height), @intFromFloat(positionedGrid.width), @intFromFloat(positionedGrid.x), @intFromFloat(positionedGrid.y), layoutRect.color, layoutRect.font);
-
-    layout.setGridSystem(layoutRect.grid);
-
+    var layout = Layout.introduce(self.gpa, layoutRect.position.row, layoutRect.position.column, layoutRect.position.spanRow, layoutRect.position.spanCol, layoutRect.color, layoutRect.font);
+    _ = try layout.setGridSystem(layoutRect.grid);
+    
     try self.layouts.append(.{ .border = layoutRect.border, .color = layoutRect.color, .layout = layout });
 
     return &self.layouts.items[self.layouts.items.len - 1].layout;
 }
 
-pub fn setGridSystem(self: *Composite, cells: c_int) void {
+pub fn setGridSystem(self: *Composite, cells: c_int) anyerror!void {
     self.grid = Grid.introduce(cells, (self.height), (self.width));
 }
 
@@ -47,13 +42,17 @@ pub fn conclude(self: Composite) void {
     self.layouts.deinit();
 }
 
-pub fn draw(self: *Composite) void {
+pub fn draw(self: *Composite) anyerror!void {
     for (0..self.layouts.items.len) |i| {
+        var points = try self.grid.reserveSpace(self.gpa, self.layouts.items[i].layout.position.column, self.layouts.items[i].layout.position.row, self.layouts.items[i].layout.position.spanCol, self.layouts.items[i].layout.position.spanRow);
+        defer self.gpa.free(points);
+
+        const positionedGrid = try self.grid.getPositionedGrid(points);
         const widget = rl.Rectangle{
-            .x = @floatFromInt(self.layouts.items[i].layout.x),
-            .y = @floatFromInt(self.layouts.items[i].layout.y),
-            .height = @floatFromInt(self.layouts.items[i].layout.height),
-            .width = @floatFromInt(self.layouts.items[i].layout.width),
+            .x = @floatCast(positionedGrid.x),
+            .y = @floatCast(positionedGrid.y),
+            .height = @floatCast(positionedGrid.height),
+            .width = @floatCast(positionedGrid.width),
         };
         if (self.layouts.items[i].border.raduis > 0.0) {
             rl.DrawRectangleRounded(widget, self.layouts.items[i].border.raduis, self.layouts.items[i].border.segments, self.layouts.items[i].color);
@@ -69,4 +68,11 @@ pub fn draw(self: *Composite) void {
         }
         self.layouts.items[i].layout.draw();
     }
+}
+
+pub fn update(self: *Composite, height: c_int, width: c_int) void {
+    self.height = height;
+    self.width = width;
+    
+    self.grid = Grid.introduce(self.grid.cells, height, width);
 }

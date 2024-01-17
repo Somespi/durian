@@ -22,7 +22,8 @@ pub fn main() anyerror!void {
         rl.ClearBackground(rl.GetColor(0x23222300));
 
         rl.BeginDrawing();
-        landing.draw();
+        landing.update(rl.GetScreenHeight(), rl.GetScreenWidth());
+        _ = try landing.draw();
         rl.EndDrawing();
     }
 }
