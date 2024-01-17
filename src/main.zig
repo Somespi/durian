@@ -1,7 +1,11 @@
+const std = @import("std");
 const rl = @import("utils/raylib.zig");
 const Composite = @import("utils/Composite.zig");
 
 pub fn main() anyerror!void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+
     rl.SetConfigFlags(rl.FLAG_WINDOW_RESIZABLE);
     rl.SetTraceLogLevel(rl.LOG_NONE);
 
@@ -11,7 +15,7 @@ pub fn main() anyerror!void {
     rl.SetWindowMinSize(800, 400);
     rl.SetTargetFPS(60);
 
-    var landing = try @import("windows/landing.zig").init();
+    var landing = try @import("windows/landing.zig").init(allocator);
     defer landing.conclude();
 
     while (!rl.WindowShouldClose()) {
