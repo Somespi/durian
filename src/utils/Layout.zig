@@ -63,7 +63,8 @@ pub fn drawRect(self: Layout) void {
 }
 
 pub fn pack(self: *Layout, layoutRect: Rectangle) anyerror!void {
-    var points = try self.grid.reserveSpace(self.gpa, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+ solve-segfault
+    var points = try sf.grid.reserveSpace(self.gpa, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
     defer self.gpa.free(points);
 
     const positionedGrid = try self.grid.getPositionedGrid(points);
