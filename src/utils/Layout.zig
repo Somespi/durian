@@ -13,18 +13,18 @@ font: rl.Font,
 layoutItems: Arraylist(Item),
 grid: Grid,
 
-const Content = struct { content: [:0]const u8, size: f32 = 16.0, spacing: f32 = 1.0, color: rl.Color = rl.BLACK };
-const Border = struct { color: rl.Color, thick: f32 = 5.0, raduis: f32 = 0.0, segments: c_int = 5 };
-const Position = struct {
+pub const Content = struct { content: [:0]const u8, size: f32 = 16.0, spacing: f32 = 1.0, color: rl.Color = rl.BLACK };
+pub const Border = struct { color: rl.Color, thick: f32 = 5.0, raduis: f32 = 0.0, segments: c_int = 5 };
+pub const Position = struct {
     row: usize,
     column: usize,
     spanRow: usize = 0,
     spanCol: usize = 0,
 };
-const Style = struct { zIndex: c_int, border: Border = undefined };
-const Rectangle = struct { text: Content = undefined, zIndex: c_int = 0, border: Border = undefined, color: rl.Color, position: Position, id: isize = -1 };
+pub const Style = struct { zIndex: c_int, border: Border = undefined };
+pub const Rectangle = struct { text: Content = undefined, zIndex: c_int = 0, border: Border = undefined, color: rl.Color, position: Position, id: isize = -1 };
 
-const Item = struct { widget: rl.Rectangle, text: Content = undefined, color: rl.Color, style: Style, id: usize };
+pub const Item = struct { widget: rl.Rectangle, text: Content = undefined, color: rl.Color, style: Style, id: usize };
 
 pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int, backgroundColor: rl.Color, fontPath: [:0]const u8) Layout {
     const font = rl.LoadFont(fontPath);
@@ -69,7 +69,7 @@ pub fn pack(self: *Layout, layoutRect: Rectangle) anyerror!void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 
     const points = try self.grid.reserveSpace(gpa.allocator(), layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
-    defer gpa.allocator().free(&points);
+    defer gpa.allocator().free(points);
 
     const positionedGrid = try self.grid.getPositionedGrid(points);
 
@@ -90,7 +90,7 @@ pub fn setGridSystem(self: *Layout, cells: c_int) void {
 }
 
 fn zIndexSort(self: *Layout) void {
-    std.sort.heap(Item, self.layoutItems.items, {}, .helperSortFn);
+    std.sort.heap(Item, self.layoutItems.items, {}, Layout.helperSortFn);
 }
 
 fn helperSortFn(context: void, a: Item, b: Item) bool {

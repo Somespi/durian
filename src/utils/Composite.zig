@@ -12,6 +12,7 @@ y: c_int,
 layouts: Arraylist(Item),
 grid: Grid,
 
+const Rectangle = struct { border: Layout.Border = undefined, color: rl.Color, position: Layout.Position, font: [:0]const u8, grid: c_int };
 const Item = struct { border: Layout.Border = undefined, color: rl.Color, layout: Layout };
 
 pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int) Composite {
@@ -20,11 +21,11 @@ pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int) Composite {
     return Composite{ .width = width, .height = height, .x = x, .y = y, .layouts = Arraylist(Item).init(gpa.allocator()), .grid = undefined };
 }
 
-pub fn contain(self: *Composite, layoutRect: Layout.Rectangle) anyerror!*Layout {
+pub fn contain(self: *Composite, layoutRect: Rectangle) anyerror!*Layout {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 
-    const points = try self.grid.reserveSpace(gpa.allocator(), layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
-    defer gpa.allocator().free(&points);
+    var points = try self.grid.reserveSpace(gpa.allocator(), layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+    defer gpa.allocator().free(points);
 
     const positionedGrid = try self.grid.getPositionedGrid(points);
 

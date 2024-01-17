@@ -1,4 +1,4 @@
-const rl = @import("../utils/c.zig");
+const rl = @import("../utils/raylib.zig");
 const Grid = @import("../utils/Grid.zig");
 const Layout = @import("../utils/Layout.zig");
 const Composite = @import("../utils/Composite.zig");
