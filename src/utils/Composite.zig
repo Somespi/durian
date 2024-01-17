@@ -17,18 +17,17 @@ const Item = struct { border: Layout.Border = undefined, color: rl.Color, layout
 
 pub fn introduce(height: c_int, width: c_int, x: c_int, y: c_int) Composite {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-
     return Composite{ .width = width, .height = height, .x = x, .y = y, .layouts = Arraylist(Item).init(gpa.allocator()), .grid = undefined };
 }
 
 pub fn contain(self: *Composite, layoutRect: Rectangle) anyerror!*Layout {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var allocator = gpa.allocator();
 
-    var points = try self.grid.reserveSpace(gpa.allocator(), layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
-    defer gpa.allocator().free(points);
+    var points = try self.grid.reserveSpace(allocator, layoutRect.position.column, layoutRect.position.row, layoutRect.position.spanCol, layoutRect.position.spanRow);
+    defer allocator.free(points);
 
     const positionedGrid = try self.grid.getPositionedGrid(points);
-
     var layout = Layout.introduce(@intFromFloat(positionedGrid.height), @intFromFloat(positionedGrid.width), @intFromFloat(positionedGrid.x), @intFromFloat(positionedGrid.y), layoutRect.color, layoutRect.font);
 
     layout.setGridSystem(layoutRect.grid);
