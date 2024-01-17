@@ -16,16 +16,26 @@ pub fn init(gpa: std.mem.Allocator) anyerror!Composite {
         .font = "src/resources/poppins.ttf", 
         .border = .{
             .color = rl.BLACK,
-            .thick = 5,
+            .thick = 3,
             },
-        .position = .{ .row = 0, .column = 0, .spanCol = 10, .spanRow = 50 }, 
+        .position = .{ .row = 5, .column = 0, .spanCol = 8, .spanRow = 44 }, 
         .grid = 20 
         });
+    _ = sidebar;
 
-    _ = try sidebar.pack(.{ .position = .{
-        .column = 0,
-        .row = 0,
-    }, .color = rl.RED });
 
+    var header = try composite.contain(.{ 
+        .color = rl.GetColor(0x001A1A1A), 
+        .font = "src/resources/poppins.ttf", 
+        .border = .{
+            .color = rl.BLACK,
+            .thick = 3,
+            },
+        .position = .{ .row = 0, .column = 0, .spanCol = 49, .spanRow = 4 }, 
+        .grid = 20 
+        });
+    _ = header;
+
+   
     return composite;
 }

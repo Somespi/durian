@@ -42,8 +42,8 @@ pub fn draw(self: *Layout) void {
             rl.DrawRectangleLinesEx(rl.Rectangle{
                 .x = item.widget.x - item.style.border.thick,
                 .y = item.widget.y - item.style.border.thick,
-                .width = item.widget.width + 2 * item.style.border.thick,
-                .height = item.widget.height + 2 * item.style.border.thick,
+                .width = item.widget.width,
+                .height = item.widget.height,
             }, item.style.border.thick, item.style.border.color);
         }
 

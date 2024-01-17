@@ -60,10 +60,10 @@ pub fn draw(self: *Composite) anyerror!void {
         } else {
             rl.DrawRectangle(@intFromFloat(widget.x), @intFromFloat(widget.y), @intFromFloat(widget.width), @intFromFloat(widget.height), self.layouts.items[i].color);
             rl.DrawRectangleLinesEx(rl.Rectangle{
-                .x = widget.x - self.layouts.items[i].border.thick,
-                .y = widget.y - self.layouts.items[i].border.thick,
-                .width = widget.width + 2 * self.layouts.items[i].border.thick,
-                .height = widget.height + 2 * self.layouts.items[i].border.thick,
+                .x = widget.x - self.layouts.items[i].border.thick + self.layouts.items[i].border.thick,
+                .y = widget.y - self.layouts.items[i].border.thick + self.layouts.items[i].border.thick,
+                .width = widget.width,
+                .height = widget.height,
             }, self.layouts.items[i].border.thick, self.layouts.items[i].border.color);
         }
         self.layouts.items[i].layout.draw();
